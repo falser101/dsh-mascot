@@ -10,7 +10,6 @@ import { execSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 
 const SOURCES = {
-  body: '主形象图.jpg',
   'face-neutral': '正常脸.jpg',
   'face-happy': '开心脸.jpg',
   'face-sad': '难过脸.jpg',
