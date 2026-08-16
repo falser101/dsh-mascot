@@ -1,0 +1,149 @@
+.root {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* ---- part transform anchors (SVG user space, centered on the part) ---- */
+.body { transform-box: fill-box; transform-origin: center; }
+.head { transform-box: fill-box; transform-origin: 50% 62%; }
+.earL, .earR { transform-box: fill-box; transform-origin: 50% 12%; }
+.eyeL, .eyeR { transform-box: fill-box; transform-origin: center; }
+.tail { transform-box: fill-box; transform-origin: 0% 60%; }
+.sweat, .tear { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.sparkle { opacity: 0; transform-box: fill-box; transform-origin: center; }
+
+/* ---- idle: breathing body + periodic blink ---- */
+.root[data-mood='idle'] .body { animation: mascot-breathe 2.8s ease-in-out infinite; }
+.root .eyeL,
+.root .eyeR { animation: mascot-blink 4.2s infinite; }
+
+@keyframes mascot-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035, 0.97); }
+}
+
+@keyframes mascot-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  94% { transform: scaleY(0.12); }
+}
+
+/* ---- queued: eager hopping ---- */
+.root[data-mood='queued'] { animation: mascot-hop 0.6s ease-in-out infinite; }
+
+@keyframes mascot-hop {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-7px); }
+  60% { transform: translateY(0); }
+  75% { transform: translateY(-3px); }
+}
+
+/* ---- confirming: tilted head, looking at you ---- */
+.root[data-mood='confirming'] .head { animation: mascot-tilt 1.8s ease-in-out infinite; }
+.root[data-mood='confirming'] .eyeL { animation: mascot-look 1.8s ease-in-out infinite; }
+
+@keyframes mascot-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(7deg); }
+}
+
+@keyframes mascot-look {
+  0%, 100% { transform: translate(1.5px, -1px); }
+  50% { transform: translate(0, 0); }
+}
+
+/* ---- thinking: head sway + narrowed eyes ---- */
+.root[data-mood='thinking'] .head { animation: mascot-think 2s ease-in-out infinite; }
+.root[data-mood='thinking'] .eyeL,
+.root[data-mood='thinking'] .eyeR { animation: mascot-squint 2s ease-in-out infinite; }
+
+@keyframes mascot-think {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes mascot-squint {
+  0%, 100% { transform: scaleY(0.72); }
+  50% { transform: scaleY(1); }
+}
+
+/* ---- working: busy wiggle + falling sweat ---- */
+.root[data-mood='working'] .head { animation: mascot-busy 0.5s ease-in-out infinite; }
+.root[data-mood='working'] .sweat { opacity: 1; animation: mascot-sweat 1.4s linear infinite; }
+
+@keyframes mascot-busy {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(2.2deg); }
+  75% { transform: rotate(-2.2deg); }
+}
+
+@keyframes mascot-sweat {
+  0% { opacity: 0; transform: translateY(0); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(11px); }
+}
+
+/* ---- streaming: eyes scanning the lines ---- */
+.root[data-mood='streaming'] .eyeL,
+.root[data-mood='streaming'] .eyeR { animation: mascot-glance 0.9s ease-in-out infinite alternate; }
+
+@keyframes mascot-glance {
+  from { transform: translateX(1.6px); }
+  to { transform: translateX(-1.6px); }
+}
+
+/* ---- done: celebration jump + sparkle ---- */
+.root[data-mood='done'] { animation: mascot-celebrate 0.9s ease-in-out 2; }
+.root[data-mood='done'] .sparkle { opacity: 1; animation: mascot-sparkle 0.9s ease-in-out 2; }
+.root[data-mood='done'] .eyeL,
+.root[data-mood='done'] .eyeR { animation: mascot-happy-eye 0.9s ease-in-out 2; }
+
+@keyframes mascot-celebrate {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  35% { transform: translateY(-10px) rotate(-4deg); }
+  65% { transform: translateY(-5px) rotate(4deg); }
+}
+
+@keyframes mascot-sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(20deg); }
+}
+
+@keyframes mascot-happy-eye {
+  0%, 100% { transform: scaleY(0.72); }
+  50% { transform: scaleY(0.72) translateY(-1px); }
+}
+
+/* ---- error: worried shake + falling tear ---- */
+.root[data-mood='error'] { animation: mascot-shake 0.35s linear infinite; }
+.root[data-mood='error'] .tear { opacity: 1; animation: mascot-tear 1.6s linear infinite; }
+
+@keyframes mascot-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2.6px); }
+  75% { transform: translateX(2.6px); }
+}
+
+@keyframes mascot-tear {
+  0% { opacity: 0; transform: translateY(-2px); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(9px); }
+}
+
+/* ---- greeting: tail wag ---- */
+.root[data-mood='greeting'] .tail { animation: mascot-wag 0.5s ease-in-out infinite alternate; }
+
+@keyframes mascot-wag {
+  from { transform: rotate(-14deg); }
+  to { transform: rotate(14deg); }
+}
+
+/* ---- dragging freezes the character's own motion ---- */
+.root[data-dragging='true'] *,
+.root[data-dragging='true'] { animation: none !important; }
+
+/* ---- reduced motion: static poses only ---- */
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .root * { animation: none !important; }
+}

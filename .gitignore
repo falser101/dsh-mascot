@@ -1,0 +1,6 @@
+# The built lib/ IS the distribution artifact for git-based installs
+# (git dependencies do not run prepare), so it must stay tracked.
+node_modules/
+*.tsbuildinfo
+coverage/
+dist/

@@ -1,0 +1,8 @@
+# dsh bundle patch: mounts the mascot browser plugin row into the profile's
+# cordis tree. The row name resolves from the profile's node_modules (or the
+# $DSH_HOME/profiles/node_modules flat fallback); the dsh.client declaration
+# in this package's package.json makes the client-modules node half serve the
+# browser bundle at /plugins/@falser101/mascot/client.js.
+- insert:
+    - id: ui-mascot
+      name: '@falser101/mascot'
