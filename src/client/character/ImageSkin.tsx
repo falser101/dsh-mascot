@@ -1,10 +1,9 @@
 /**
- * AI-generated art skin: the character's full-body image with expression
- * frames composited over the head area. The body drives whole-figure
- * animations (breathe, hop, sway, shake, celebrate) via the skin root's
- * `data-mood`; the expression frame switches per mood and blinks on a timer.
- * Geometry constants are layout tweaks (120×120 viewBox) — adjust when the
- * art is replaced.
+ * AI-generated art skin: one full-body sprite per expression, all sharing
+ * the same pose and framing. The visible frame swaps by mood (and blinks
+ * on a timer); whole-figure motion (breathe, hop, sway, shake, celebrate)
+ * is driven by `data-mood` on the skin root. Do not overlay a zoomed head
+ * on a body that already has a face — that is what produced the double head.
  */
 import { useEffect, useState } from 'react'
 import type { MascotMood } from '../mascot-source'
@@ -12,13 +11,12 @@ import type { SkinProps } from './skins.ts'
 import { CHARACTER_ASSETS } from './generated.ts'
 import css from './ImageSkin.module.css'
 
-/** Full-body art placement in the 120×120 viewBox (from docs/ analysis). */
-const BODY = { x: 18, y: 9, w: 71, h: 100 }
+/** Every source frame is a 1:1 full-body sprite with identical padding.
+ *  Place the whole image in the viewBox so scale and position stay locked. */
+const FRAME = { x: 4, y: 2, w: 112, h: 112 }
 
-/** Expression-frame overlay box. Must cover the FULL head of the body art
- *  (the body image includes its own face) so the expression frame is the
- *  only visible face; generous margins absorb pose differences. */
-const HEAD = { x: 14, y: 3, w: 92, h: 64 }
+/** Faces that have a dedicated full-body sprite. */
+const FACES = ['neutral', 'happy', 'sad', 'thinking', 'closed'] as const
 
 /** Blink cadence: close every BLINK_MS for BLINK_CLOSED_MS. */
 const BLINK_MS = 4000
@@ -70,18 +68,18 @@ export function ImageSkin({ mood, dragging }: SkinProps) {
       aria-hidden="true"
     >
       <g className={css.body}>
-        <image href={faceUri('neutral')} x="0" y="0" width="0" height="0" />
-        <image href={`data:image/webp;base64,${CHARACTER_ASSETS.body}`} x={BODY.x} y={BODY.y} width={BODY.w} height={BODY.h} />
+        {FACES.map(pre => (
+          <image key={`pre-${pre}`} href={faceUri(pre)} x="0" y="0" width="0" height="0" />
+        ))}
+        <image
+          className={css.face}
+          href={faceUri(face)}
+          x={FRAME.x}
+          y={FRAME.y}
+          width={FRAME.w}
+          height={FRAME.h}
+        />
       </g>
-      <image
-        key={face}
-        className={css.face}
-        href={faceUri(face)}
-        x={HEAD.x}
-        y={HEAD.y}
-        width={HEAD.w}
-        height={HEAD.h}
-      />
     </svg>
   )
 }

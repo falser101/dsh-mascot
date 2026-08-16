@@ -1,12 +1,12 @@
 # 宠物形象 AI 生成提示词包
 
-用于在外部 AI 绘图工具（Stable Diffusion / Midjourney / 即梦 / 豆包等）生成插件可用的卡通宠物素材。目标是：**一张全身立绘用于拆件 + 一组表情帧用于状态切换**。
+用于在外部 AI 绘图工具（Stable Diffusion / Midjourney / 即梦 / 豆包等）生成插件可用的卡通宠物素材。目标是：**一组同一构图的全身立绘，每张只改表情**。不要单独出「放大的头」——插件按整只猫切换，特写头叠在已有脸上会出现两个头。
 
 ## 〇、总原则
 
 - 所有图片共用同一个**角色身份证**（第一段），保证是同一只。
 - 所有图片要求**简单轮廓、无阴影、无文字**，方便拆件和贴片。
-- 表情帧只画**头部正面特写**（我按坐标贴到身体上），不需要全身。
+- 表情帧必须与主形象图**同一只、同一姿势、同一取景、同一比例**，只改五官。不要裁成头部特写。
 
 ---
 
@@ -47,10 +47,11 @@ full body, front view, standing upright, arms and legs relaxed at the sides, tai
 ```
 
 **生成后检查清单（不满足就重新抽）：**
-- [ ] 四肢自然下垂、不遮挡身体（切件时需要）
-- [ ] 尾巴 / 耳朵 / 头 / 身体轮廓清晰可分
+- [ ] 四肢自然下垂、不遮挡身体
+- [ ] 尾巴 / 耳朵 / 头 / 身体轮廓清晰
 - [ ] 无阴影、无文字、无多余道具
 - [ ] 全身完整
+- [ ] 所有表情帧与主形象图的主体位置、大小一致（不要放大头部）
 
 **工具备注：**
 | 工具 | 透明背景做法 |
@@ -65,16 +66,16 @@ full body, front view, standing upright, arms and legs relaxed at the sides, tai
 
 每张 = **角色身份证 + 表情词 + 取景词**。用**第一张主图当参考图**（即梦/豆包的"参考图"功能，或 SD 固定 seed）保证是同一只。
 
-**通用取景词（中文版附在表情词后）：**
+**通用取景词（中文版附在表情词后，必须与主形象图同一构图）：**
 
 ```
-头部正面特写，居中，表情清晰，纯白背景，无阴影，无文字
+与主形象图完全相同的正面全身站姿/坐姿，四肢位置、尾巴位置、身体比例、构图居中、画幅留白全部不变，只改脸上的表情，纯白背景，无阴影，无文字
 ```
 
 **英文版取景词：**
 
 ```
-head close-up, front view, centered, clear expression, plain white background, no shadow, no text
+same full-body framing as the main sprite, same pose, same scale, same centered composition, change only the facial expression, plain white background, no shadow, no text
 ```
 
 ### 1. 正常脸（默认状态）
@@ -101,7 +102,7 @@ head close-up, front view, centered, clear expression, plain white background, n
 
 ## 四、参数建议（各工具通用）
 
-- 分辨率：**1024×1024**（主图） / **1024×1024**（表情帧，只要头部会放大裁切，生成时取景近一点）
+- 分辨率：**1024×1024**（主图与表情帧相同，禁止把表情裁成头部特写）
 - 步数：SD 30-40 步；国产工具默认即可
 - 负面提示词（Negative）：`shadow, text, watermark, logo, extra limbs, multiple characters, cropped, low quality, blurry, dark background`
 - Midjourney 额外加：`--no shadow, text, watermark`；表情帧用 `--cref <主图URL> --cw 100` 锁角色
@@ -122,9 +123,10 @@ character/
 
 - PNG 格式，512×512 以上
 - 透明背景最佳；白底也可以（告诉我，我抠图）
-- 表情帧是**头**就行（不需要脖子以下），我会按坐标贴到身体上，自动接入：眨眼、表情切换、尾巴/耳朵摆动、整体弹跳/晃动/呼吸等全部现有动画
+- 表情帧必须是**同一构图的全身**（不是头的特写）。主体在画幅里的位置、大小要和主形象图对得上，否则叠图会错位或出现两个头
+- 接入后自动有：眨眼、表情切换、整体弹跳/晃动/呼吸
 
 ## 六、我做好的部分（等你素材回来直接拼）
 
-- `ImageSkin` 皮肤组件框架：读取 `character/` 目录素材 → 按 120×120 排版模板摆位 → 接入 `data-mood` 动画契约
-- 部位排版模板：标注头、身体、尾巴、耳朵各自的坐标框，你以后想换图直接替换同名文件即可
+- `ImageSkin` 皮肤组件：读取 `docs/` 同构图全身帧 → 按 mood 整帧切换 → 接入 `data-mood` 动画契约
+- 换图：覆盖同名 jpg → `node scripts/build-art-assets.mjs` → 重新构建
