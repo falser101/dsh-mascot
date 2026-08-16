@@ -18,15 +18,19 @@ describe('createMascotStore', () => {
       y: window.innerHeight - MASCOT_SIZE - 24,
       collapsed: false,
       skin: 'cat',
+      bubbleAlways: true,
     })
   })
 
-  it('moves, collapses, and switches skin through the baked actions', () => {
+  it('moves, collapses, switches skin, and toggles the bubble through the baked actions', () => {
     const store = createMascotStore().create()
     store.actions.move(30, 40)
     store.actions.setCollapsed(true)
     store.actions.setSkin('dog')
-    expect(store.getSnapshot()).toMatchObject({ x: 30, y: 40, collapsed: true, skin: 'dog' })
+    store.actions.setBubbleAlways(false)
+    expect(store.getSnapshot()).toMatchObject({
+      x: 30, y: 40, collapsed: true, skin: 'dog', bubbleAlways: false,
+    })
   })
 
   it('notifies subscribers on every action', () => {
@@ -42,9 +46,12 @@ describe('createMascotStore', () => {
     first.actions.move(111, 222)
     first.actions.setCollapsed(true)
     first.actions.setSkin('dog')
+    first.actions.setBubbleAlways(false)
 
     const second = createMascotStore().create()
-    expect(second.getSnapshot()).toMatchObject({ x: 111, y: 222, collapsed: true, skin: 'dog' })
+    expect(second.getSnapshot()).toMatchObject({
+      x: 111, y: 222, collapsed: true, skin: 'dog', bubbleAlways: false,
+    })
     expect(localStorage.getItem('dsh-client-ui-mascot')).not.toBeNull()
   })
 

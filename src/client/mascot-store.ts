@@ -22,7 +22,7 @@ function defaultPosition(): { x: number; y: number } {
   }
 }
 
-/** Persisted UI state shared by the overlay entry and the settings row. */
+/** Persisted UI state shared by the overlay entry and the settings rows. */
 export interface MascotUiState {
   /** Top-left corner of the character box, in viewport px. */
   x: number
@@ -32,6 +32,8 @@ export interface MascotUiState {
   collapsed: boolean
   /** Active character skin id. */
   skin: SkinId
+  /** Whether the status bubble stays visible while the agent is busy. */
+  bubbleAlways: boolean
 }
 
 export interface MascotActions {
@@ -41,14 +43,17 @@ export interface MascotActions {
   setCollapsed(draft: MascotUiState, collapsed: boolean): void
   /** Switch the active skin. */
   setSkin(draft: MascotUiState, skin: SkinId): void
+  /** Toggle the always-visible busy bubble. */
+  setBubbleAlways(draft: MascotUiState, bubbleAlways: boolean): void
 }
 
-/** Store declaration: one persisted root-scope instance shared by both entries. */
+/** Store declaration: one persisted root-scope instance shared by all entries. */
 export const createMascotStore = () => defineStore({
   init: (): MascotUiState => ({
     ...defaultPosition(),
     collapsed: false,
     skin: 'cat',
+    bubbleAlways: true,
   }),
   persist: 'dsh-client-ui-mascot',
   actions: {
@@ -61,6 +66,9 @@ export const createMascotStore = () => defineStore({
     },
     setSkin: (draft, skin) => {
       draft.skin = skin
+    },
+    setBubbleAlways: (draft, bubbleAlways) => {
+      draft.bubbleAlways = bubbleAlways
     },
   } satisfies MascotActions,
 })

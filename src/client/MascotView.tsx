@@ -1,16 +1,17 @@
 /**
  * The floating companion view, mounted into the frame-wide `shell.overlay`
- * slot. Reads the shared mascot store (position, collapsed, skin) and the
- * inject-bound mood source; owns only component-local interaction state
- * (drag session, poke line). All presentation derives from the mood frame;
- * nothing here reaches the session or the model.
+ * slot. Reads the shared mascot store (position, collapsed, skin, busy
+ * bubble preference) and the inject-bound mood source; owns only
+ * component-local interaction state (drag session, poke line, hover line).
+ * All presentation derives from the mood frame; nothing here reaches the
+ * session or the model.
  */
 import { useEffect, useRef, useState } from 'react'
 import type {
   InjectFace, PropsLocale, PropsRuntime, PropsStore,
 } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
-import type { MascotState } from './mascot-source'
+import type { MascotMood, MascotState } from './mascot-source'
 import { createMascotStore, MASCOT_SIZE } from './mascot-store'
 import { skinOf } from './character/skins'
 import type { MascotKey, NS } from './locales'
@@ -37,6 +38,34 @@ const POKE_MS = 2000
 /** Poke lines, cycled in order on each click. */
 const POKE_KEYS: readonly MascotKey[] = ['poke.0', 'poke.1', 'poke.2', 'poke.3']
 
+/** Idle hover lines, picked at random on each hover. */
+const IDLE_HOVER_KEYS: readonly MascotKey[] = [
+  'hover.idle.0', 'hover.idle.1', 'hover.idle.2', 'hover.idle.3', 'hover.idle.4',
+]
+
+/** Moods that keep the bubble visible without a hover (the agent is busy). */
+const BUSY_MOODS: readonly MascotMood[] = [
+  'queued', 'confirming', 'thinking', 'working', 'streaming', 'error',
+]
+
+/** Moods that show the animated busy marker in the bubble corner. */
+const MARKED_MOODS: readonly MascotMood[] = ['thinking', 'working', 'streaming']
+
+/** The reassuring hover line for one steady mood. */
+function hoverKeyOf(mood: MascotMood, idleIndex: number): MascotKey {
+  switch (mood) {
+    case 'idle': return IDLE_HOVER_KEYS[idleIndex] ?? IDLE_HOVER_KEYS[0]
+    case 'queued': return 'hover.queued'
+    case 'confirming': return 'hover.confirming'
+    case 'thinking': return 'hover.thinking'
+    case 'working': return 'hover.working'
+    case 'streaming': return 'hover.streaming'
+    case 'error': return 'hover.error'
+    case 'done': return 'mood.done'
+    case 'greeting': return 'mood.greeting'
+  }
+}
+
 interface DragSession {
   pointerId: number
   offsetX: number
@@ -56,7 +85,9 @@ function clampToViewport(x: number, y: number): { x: number; y: number } {
 }
 
 /**
- * Render the draggable companion with its speech bubble.
+ * Render the draggable companion with its speech bubble. The bubble is
+ * always visible while the agent is busy (unless the settings toggle turns
+ * that off) and swaps to a reassuring line while hovered.
  * @param props - composed overlay-entry props.
  */
 export function MascotView(props: MascotViewProps) {
@@ -65,6 +96,8 @@ export function MascotView(props: MascotViewProps) {
   const mascot = useMascot(value => value)
   const [dragging, setDragging] = useState(false)
   const [poke, setPoke] = useState<{ text: string; nonce: number } | null>(null)
+  const [hovering, setHovering] = useState(false)
+  const [idleHoverIndex, setIdleHoverIndex] = useState(0)
   const dragRef = useRef<DragSession | null>(null)
   const pokeCounter = useRef(0)
 
@@ -121,12 +154,23 @@ export function MascotView(props: MascotViewProps) {
     actions.setCollapsed(!state.collapsed)
   }
 
+  const onHoverEnter = () => {
+    setIdleHoverIndex(Math.floor(Math.random() * IDLE_HOVER_KEYS.length))
+    setHovering(true)
+  }
+
   const skin = skinOf(state.skin)
   const Skin = skin.Component
+  const busy = BUSY_MOODS.includes(mascot.mood)
+  const busyMarked = MARKED_MOODS.includes(mascot.mood)
   const bubbleText = state.collapsed
     ? t('collapse.hint')
-    : poke?.text ?? t(mascot.textKey, mascot.params)
-  const bubbleVisible = poke !== null || mascot.until !== undefined
+    : poke?.text
+      ?? t(hovering ? hoverKeyOf(mascot.mood, idleHoverIndex) : mascot.textKey, mascot.params)
+  const bubbleVisible = poke !== null
+    || mascot.until !== undefined
+    || hovering
+    || (state.bubbleAlways && busy)
 
   const rootClass = [
     css.root,
@@ -145,6 +189,8 @@ export function MascotView(props: MascotViewProps) {
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onDoubleClick={onDoubleClick}
+      onMouseEnter={onHoverEnter}
+      onMouseLeave={() => { setHovering(false) }}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
@@ -158,7 +204,8 @@ export function MascotView(props: MascotViewProps) {
         role="status"
         aria-live="polite"
       >
-        {bubbleText}
+        <span key={bubbleText} className={css.bubbleText}>{bubbleText}</span>
+        {busyMarked && <span className={css.busy} aria-hidden="true"><i /><i /><i /></span>}
       </div>
       {state.collapsed ? (
         <div className={css.dot} aria-hidden="true" />

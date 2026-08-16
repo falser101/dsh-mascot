@@ -19,6 +19,17 @@ export declare const zh: {
     readonly 'mood.done': "搞定啦！🎉";
     readonly 'mood.error': "哎呀，出错了…";
     readonly 'mood.greeting': "你好呀！";
+    readonly 'hover.idle.0': "我在呢，随时找我～";
+    readonly 'hover.idle.1': "偷偷看你干活中…";
+    readonly 'hover.idle.2': "要不要歇会儿？";
+    readonly 'hover.idle.3': "（伸了个懒腰）";
+    readonly 'hover.idle.4': "今天的你也很棒！";
+    readonly 'hover.queued': "马上就到你了～";
+    readonly 'hover.confirming': "慢慢看，不着急～";
+    readonly 'hover.thinking': "别着急，我在努力想～";
+    readonly 'hover.working': "马上就好！";
+    readonly 'hover.streaming': "快写完啦，再等一下下～";
+    readonly 'hover.error': "抱抱，别难过，我们再试一次";
     readonly 'poke.0': "别戳我啦～";
     readonly 'poke.1': "痒痒的！喵？";
     readonly 'poke.2': "（打了个滚）";
@@ -31,6 +42,8 @@ export declare const zh: {
     readonly 'skin.description': "选择悬浮在界面上的小伙伴";
     readonly 'skin.cat': "猫咪";
     readonly 'skin.dog': "狗狗";
+    readonly 'bubble.title': "忙碌时显示气泡";
+    readonly 'bubble.description': "AI 思考、调用工具或写答案时，自动显示状态气泡";
 };
 /** English dictionary, key-identical to the Chinese source of truth. */
 export declare const en: Record<MascotKey, string>;

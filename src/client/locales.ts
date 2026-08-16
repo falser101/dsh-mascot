@@ -12,6 +12,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  // Steady status lines (always visible while the agent is busy).
   'mood.idle': '我在呢，随时找我～',
   'mood.queued': '收到！排队开工',
   'mood.confirming.approval': '等你批准一下～',
@@ -22,6 +23,20 @@ export const zh = {
   'mood.done': '搞定啦！🎉',
   'mood.error': '哎呀，出错了…',
   'mood.greeting': '你好呀！',
+  // Hover lines: warm, reassuring copy that replaces the status line while
+  // the pointer rests on the companion.
+  'hover.idle.0': '我在呢，随时找我～',
+  'hover.idle.1': '偷偷看你干活中…',
+  'hover.idle.2': '要不要歇会儿？',
+  'hover.idle.3': '（伸了个懒腰）',
+  'hover.idle.4': '今天的你也很棒！',
+  'hover.queued': '马上就到你了～',
+  'hover.confirming': '慢慢看，不着急～',
+  'hover.thinking': '别着急，我在努力想～',
+  'hover.working': '马上就好！',
+  'hover.streaming': '快写完啦，再等一下下～',
+  'hover.error': '抱抱，别难过，我们再试一次',
+  // Poke lines (click).
   'poke.0': '别戳我啦～',
   'poke.1': '痒痒的！喵？',
   'poke.2': '（打了个滚）',
@@ -30,10 +45,13 @@ export const zh = {
   'collapse.aria': '收起悬浮伙伴',
   'expand.aria': '唤出悬浮伙伴',
   'widget.aria': '悬浮伙伴',
+  // Settings rows.
   'skin.title': '悬浮伙伴形象',
   'skin.description': '选择悬浮在界面上的小伙伴',
   'skin.cat': '猫咪',
   'skin.dog': '狗狗',
+  'bubble.title': '忙碌时显示气泡',
+  'bubble.description': 'AI 思考、调用工具或写答案时，自动显示状态气泡',
 } as const
 
 /** English dictionary, key-identical to the Chinese source of truth. */
@@ -48,6 +66,17 @@ export const en: Record<MascotKey, string> = {
   'mood.done': 'Done! 🎉',
   'mood.error': 'Oops, something went wrong…',
   'mood.greeting': 'Hi there!',
+  'hover.idle.0': 'Here whenever you need me～',
+  'hover.idle.1': 'Quietly watching you work…',
+  'hover.idle.2': 'Care for a break?',
+  'hover.idle.3': '（stretches）',
+  'hover.idle.4': "You're doing great today!",
+  'hover.queued': "You're next, almost there～",
+  'hover.confirming': 'Take your time～',
+  'hover.thinking': 'Hold on, I am thinking hard～',
+  'hover.working': 'Almost done!',
+  'hover.streaming': 'Almost finished writing, one more moment～',
+  'hover.error': 'Hugs, do not worry — let us try again',
   'poke.0': 'Stop poking me～',
   'poke.1': 'That tickles! Meow?',
   'poke.2': '（rolled over）',
@@ -60,6 +89,8 @@ export const en: Record<MascotKey, string> = {
   'skin.description': 'Choose the companion floating over the UI',
   'skin.cat': 'Cat',
   'skin.dog': 'Dog',
+  'bubble.title': 'Bubble while busy',
+  'bubble.description': 'Show the status bubble while the AI thinks, runs tools, or writes',
 }
 
 /** Key domain of the `mascot` namespace (zh is the source of truth). */

@@ -141,6 +141,53 @@ describe('MascotView', () => {
     expect(view.container.querySelector('svg')).not.toBeNull()
   })
 
+  it('keeps the bubble visible while the agent is busy, with the busy marker', () => {
+    const { props } = bench({
+      mood: 'thinking',
+      textKey: 'mood.thinking',
+    })
+    const view = render(<MascotView {...props} />)
+    const bubble = bubbleOf(view)
+    expect(bubble.dataset.visible).toBe('true')
+    expect(bubble.textContent).toContain('让我想想…')
+    expect(view.container.querySelector('span[aria-hidden="true"] i')).not.toBeNull()
+  })
+
+  it('does not keep the bubble visible when the busy-bubble toggle is off', () => {
+    const { props, store } = bench({ mood: 'working', textKey: 'mood.working' })
+    store.actions.setBubbleAlways(false)
+    const view = render(<MascotView {...props} />)
+    expect(bubbleOf(view).dataset.visible).toBe('false')
+  })
+
+  it('keeps the bubble hidden while idle without a hover', () => {
+    const { props } = bench()
+    const view = render(<MascotView {...props} />)
+    expect(bubbleOf(view).dataset.visible).toBe('false')
+  })
+
+  it('swaps to a reassuring line while hovered and back after leaving', () => {
+    const { props } = bench({ mood: 'thinking', textKey: 'mood.thinking' })
+    const view = render(<MascotView {...props} />)
+    const root = view.container.firstElementChild as HTMLElement
+
+    fireEvent.mouseEnter(root)
+    expect(bubbleOf(view).textContent).toBe('别着急，我在努力想～')
+
+    fireEvent.mouseLeave(root)
+    expect(bubbleOf(view).textContent).toBe('让我想想…')
+  })
+
+  it('shows a random idle theater line while hovered idle', () => {
+    const { props } = bench()
+    const view = render(<MascotView {...props} />)
+    const root = view.container.firstElementChild as HTMLElement
+
+    fireEvent.mouseEnter(root)
+    const text = bubbleOf(view).textContent!
+    expect(['我在呢，随时找我～', '偷偷看你干活中…', '要不要歇会儿？', '（伸了个懒腰）', '今天的你也很棒！']).toContain(text)
+  })
+
   it('respects a persisted collapsed state at first render', () => {
     const { props, store } = bench()
     store.actions.setCollapsed(true)

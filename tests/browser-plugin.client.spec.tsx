@@ -44,7 +44,7 @@ async function bench() {
 function entryOf(ctx: Context, slot: 'shell.overlay' | 'settings.general.item') {
   const entry = ctx.slots.entries(slot)[0]
   if (entry === undefined) return undefined
-  return { ...entry.options, locale: entry.locale, inject: entry.inject }
+  return { ...entry.options, locale: entry.locale, inject: entry.inject, store: entry.store }
 }
 
 describe('mascot browser plugin', () => {
@@ -60,12 +60,17 @@ describe('mascot browser plugin', () => {
     await b.fiber.dispose()
   })
 
-  it('registers the settings row over the same shared store', async () => {
+  it('registers the two settings rows over the same shared store', async () => {
     const b = await bench()
     const overlay = entryOf(b.ctx, 'shell.overlay')!
-    const row = entryOf(b.ctx, 'settings.general.item')!
-    expect(row).toMatchObject({ id: 'ui-mascot-skin', order: 60, locale: 'mascot' })
-    expect(row.store).toBe(overlay.store)
+    const rows = b.ctx.slots.entries('settings.general.item')
+      .map(entry => ({ ...entry.options, locale: entry.locale, store: entry.store }))
+    expect(rows).toContainEqual(expect.objectContaining({
+      id: 'ui-mascot-skin', order: 60, locale: 'mascot', store: overlay.store,
+    }))
+    expect(rows).toContainEqual(expect.objectContaining({
+      id: 'ui-mascot-bubble', order: 70, locale: 'mascot', store: overlay.store,
+    }))
     await b.fiber.dispose()
   })
 
@@ -85,7 +90,7 @@ describe('mascot browser plugin', () => {
     await b.fiber.dispose()
   })
 
-  it('fiber dispose removes both entries and stops the source', async () => {
+  it('fiber dispose removes all entries and stops the source', async () => {
     const b = await bench()
     await b.sessions.add({ id: SESSION_ID })
     await b.fiber.dispose()

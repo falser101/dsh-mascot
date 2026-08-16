@@ -1,10 +1,11 @@
 /**
  * Mascot plugin, browser half: mounts the floating companion into the
- * frame-wide `shell.overlay` slot and its skin preference row into General
- * settings. One store handle is shared by both entries (drag position,
- * collapsed flag, active skin — persisted), and one {@link MascotSource}
- * folds the current session's conversation snapshot into the mood frame the
- * overlay entry renders through its inject `hooks` compartment.
+ * frame-wide `shell.overlay` slot and its two preference rows (skin, busy
+ * bubble) into General settings. One store handle is shared by every entry
+ * (drag position, collapsed flag, active skin, bubble preference —
+ * persisted), and one {@link MascotSource} folds the current session's
+ * conversation snapshot into the mood frame the overlay entry renders
+ * through its inject `hooks` compartment.
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: merge the locale service's ctx face.
@@ -18,14 +19,16 @@ import { createMascotStore } from './mascot-store'
 import { MascotSource } from './mascot-source'
 import { MascotView, type MascotViewInjected } from './MascotView'
 import { SkinSettingRow } from './SkinSettingRow'
+import { BubbleSettingRow } from './BubbleSettingRow'
 
 /** Required services: the sessions list/bindings, the slot registry, and locale registration. */
 export const inject = ['sessions', 'slots', 'locale']
 
 /**
  * Client plugin body: register dictionaries, the mood source lifecycle, the
- * overlay entry, and the settings row. Every registration and subscription
- * rides the fiber's effect scope, so unload (and HMR) removes all of them.
+ * overlay entry, and the two settings rows. Every registration and
+ * subscription rides the fiber's effect scope, so unload (and HMR) removes
+ * all of them.
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
@@ -51,4 +54,12 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     store,
   }, SkinSettingRow))
+
+  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
+    name: 'settings.general.item',
+    id: 'ui-mascot-bubble',
+    order: 70,
+    locale: NS,
+    store,
+  }, BubbleSettingRow))
 }
