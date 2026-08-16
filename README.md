@@ -25,6 +25,12 @@ A draggable animated floating companion for the DeepSeek Harness web GUI (`dsh w
 - **形象切换**：设置页 → 通用 → 「悬浮伙伴形象」选择猫咪/狗狗，选择持久化。
 - 中英双语文案（跟随界面语言）；尊重 `prefers-reduced-motion`（系统减弱动态时动画关闭）。
 
+## 效果演示
+
+![悬浮伙伴交互演示](demo/mascot-interactions.gif)
+
+上图录制于无 key 的干净实例：初始空闲 → 悬停气泡 → 拖拽移动 → 双击收起。会话状态类动画（思考/调工具/完成等）需要真实对话触发，见下文"状态反应"表。
+
 ## 安装（给使用者）
 
 前置条件：一台已装好 DeepSeek Harness 并能运行 `dsh --profile web` 的机器（仓库内各 `@deepseek-ai/dsh-client-*` 依赖版本 ≥ `0.1.0-rc.5`）。
