@@ -51,8 +51,19 @@ const IDLE_HOVER_KEYS: readonly MascotKey[] = [
   'hover.idle.0', 'hover.idle.1', 'hover.idle.2', 'hover.idle.3', 'hover.idle.4',
 ]
 
+/** Moods that keep the bubble visible without a hover (the agent is busy). */
+const BUSY_MOODS: readonly MascotMood[] = [
+  'queued', 'confirming', 'thinking', 'working', 'streaming', 'error', 'elsewhere',
+]
+
 /** Moods that show the animated busy marker in the bubble corner. */
 const MARKED_MOODS: readonly MascotMood[] = ['thinking', 'working', 'streaming']
+
+/** How long an idle pop-up stays visible, ms. */
+const IDLE_POP_MS = 8000
+
+/** How often the idle bubble pops up on its own, ms. */
+const IDLE_POP_INTERVAL_MS = 40_000
 
 /** Badge threshold: show the parallel-count badge from two executions on. */
 const BADGE_MIN = 2
@@ -117,6 +128,7 @@ export function MascotView(props: MascotViewProps) {
   const [poke, setPoke] = useState<{ text: string; nonce: number } | null>(null)
   const [hovering, setHovering] = useState(false)
   const [idleHoverIndex, setIdleHoverIndex] = useState(0)
+  const [popVisible, setPopVisible] = useState(false)
   const dragRef = useRef<DragSession | null>(null)
   const pokeCounter = useRef(0)
 
@@ -124,6 +136,35 @@ export function MascotView(props: MascotViewProps) {
   useEffect(() => {
     setAiLines(state.aiLines)
   }, [state.aiLines, setAiLines])
+
+  // Idle pop-ups: while idle (and the bubble toggle is on) the bubble shows
+  // itself briefly, hides, and pops up again on a cadence — the "occasional
+  // AI vignette" behavior; busy moods stay permanently visible instead.
+  const isIdle = mascot.mood === 'idle'
+  useEffect(() => {
+    if (!isIdle || !state.bubbleAlways) {
+      setPopVisible(false)
+      return
+    }
+    let hideTimer: ReturnType<typeof setTimeout> | undefined
+    let shown = false
+    const show = () => {
+      if (shown) return
+      shown = true
+      setPopVisible(true)
+      hideTimer = setTimeout(() => {
+        shown = false
+        setPopVisible(false)
+      }, IDLE_POP_MS)
+    }
+    show()
+    const interval = setInterval(show, IDLE_POP_INTERVAL_MS)
+    return () => {
+      clearInterval(interval)
+      if (hideTimer !== undefined) clearTimeout(hideTimer)
+      setPopVisible(false)
+    }
+  }, [isIdle, state.bubbleAlways])
 
   // Keep the widget inside the viewport when the window shrinks.
   useEffect(() => {
@@ -196,10 +237,11 @@ export function MascotView(props: MascotViewProps) {
       ?? (hovering && !showPeerList
         ? t(hoverKeyOf(mascot.mood, idleHoverIndex))
         : mascot.mood === 'idle' ? idleLine : t(mascot.textKey, mascot.params))
+  const busy = BUSY_MOODS.includes(mascot.mood)
   const bubbleVisible = poke !== null
     || mascot.until !== undefined
     || hovering
-    || state.bubbleAlways
+    || (state.bubbleAlways && (busy || popVisible))
   const showBadge = mascot.busyCount >= BADGE_MIN
 
   const rootClass = [

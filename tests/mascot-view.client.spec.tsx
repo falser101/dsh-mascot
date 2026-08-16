@@ -181,11 +181,33 @@ describe('MascotView', () => {
     expect(bubbleOf(view).dataset.visible).toBe('false')
   })
 
-  it('keeps the bubble visible while idle too, when the toggle is on', () => {
+  it('pops the bubble up on its own while idle, hides it, and pops again', () => {
+    vi.useFakeTimers()
+    try {
+      const { props } = bench()
+      const view = render(<MascotView {...props} />)
+      // The first pop-up shows immediately on entering idle.
+      expect(bubbleOf(view).dataset.visible).toBe('true')
+      expect(bubbleOf(view).textContent).toBe('我在呢，随时找我～')
+      // It hides itself after the pop duration…
+      act(() => { vi.advanceTimersByTime(8000) })
+      expect(bubbleOf(view).dataset.visible).toBe('false')
+      // …and pops up again on the cadence.
+      act(() => { vi.advanceTimersByTime(32_000) })
+      expect(bubbleOf(view).dataset.visible).toBe('true')
+      act(() => { vi.advanceTimersByTime(8000) })
+      expect(bubbleOf(view).dataset.visible).toBe('false')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps the bubble visible continuously while idle when hovered', () => {
     const { props } = bench()
     const view = render(<MascotView {...props} />)
+    const root = view.container.firstElementChild as HTMLElement
+    fireEvent.mouseEnter(root)
     expect(bubbleOf(view).dataset.visible).toBe('true')
-    expect(bubbleOf(view).textContent).toBe('我在呢，随时找我～')
   })
 
   it('shows the rotated idle line, including raw AI lines, while idle', () => {
