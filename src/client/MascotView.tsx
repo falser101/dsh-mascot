@@ -15,17 +15,22 @@ import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
 import type { BusyPeer, MascotMood, MascotState } from './mascot-source'
 import { createMascotStore, MASCOT_SIZE } from './mascot-store'
 import { skinOf } from './character/skins'
+import { AI_LINE_PREFIX } from './mascot-lines'
 import type { MascotKey, NS } from './locales'
 import css from './MascotView.module.css'
 
-/** Injectable face: the mood source bound as the `useMascot` selector hook. */
+/** Injectable face: the mood source and the idle line bound as hooks. */
 export interface MascotViewInjected {
   hooks: {
     /** Live mood frame of the current session. */
     mascot: ObservableSnapshot<MascotState>
+    /** Current idle rotation line (built-in key or `ai:`-prefixed raw text). */
+    lines: ObservableSnapshot<string>
   }
   /** Jump to the session owning the given peer id (no-op for job peers). */
   openPeer: (sessionId: string) => void
+  /** Apply the AI-lines settings toggle to the rotator. */
+  setAiLines: (enabled: boolean) => void
 }
 
 /** Full overlay-entry props: runtime kit + locale seat + store + inject face. */
@@ -104,15 +109,21 @@ function clampToViewport(x: number, y: number): { x: number; y: number } {
  * @param props - composed overlay-entry props.
  */
 export function MascotView(props: MascotViewProps) {
-  const { useStore, actions, useMascot, t, openPeer } = props
+  const { useStore, actions, useMascot, useLines, t, openPeer, setAiLines } = props
   const state = useStore(value => value)
   const mascot = useMascot(value => value)
+  const line = useLines(value => value)
   const [dragging, setDragging] = useState(false)
   const [poke, setPoke] = useState<{ text: string; nonce: number } | null>(null)
   const [hovering, setHovering] = useState(false)
   const [idleHoverIndex, setIdleHoverIndex] = useState(0)
   const dragRef = useRef<DragSession | null>(null)
   const pokeCounter = useRef(0)
+
+  // Keep the rotator's AI toggle in sync with the persisted preference.
+  useEffect(() => {
+    setAiLines(state.aiLines)
+  }, [state.aiLines, setAiLines])
 
   // Keep the widget inside the viewport when the window shrinks.
   useEffect(() => {
@@ -176,10 +187,15 @@ export function MascotView(props: MascotViewProps) {
   const Skin = skin.Component
   const busyMarked = MARKED_MOODS.includes(mascot.mood)
   const showPeerList = hovering && mascot.peers.length > 1
+  const idleLine = line.startsWith(AI_LINE_PREFIX)
+    ? line.slice(AI_LINE_PREFIX.length)
+    : t(line as MascotKey)
   const bubbleText = state.collapsed
     ? t('collapse.hint')
     : poke?.text
-      ?? t(hovering && !showPeerList ? hoverKeyOf(mascot.mood, idleHoverIndex) : mascot.textKey, mascot.params)
+      ?? (hovering && !showPeerList
+        ? t(hoverKeyOf(mascot.mood, idleHoverIndex))
+        : mascot.mood === 'idle' ? idleLine : t(mascot.textKey, mascot.params))
   const bubbleVisible = poke !== null
     || mascot.until !== undefined
     || hovering

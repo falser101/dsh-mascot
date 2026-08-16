@@ -19,6 +19,7 @@ describe('createMascotStore', () => {
       collapsed: false,
       skin: 'cat',
       bubbleAlways: true,
+      aiLines: true,
     })
   })
 

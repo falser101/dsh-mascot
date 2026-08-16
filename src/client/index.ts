@@ -17,9 +17,11 @@ import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { en, NS, zh } from './locales'
 import { createMascotStore } from './mascot-store'
 import { MascotSource } from './mascot-source'
+import { MascotLineSource } from './mascot-lines'
 import { MascotView, type MascotViewInjected } from './MascotView'
 import { SkinSettingRow } from './SkinSettingRow'
 import { BubbleSettingRow } from './BubbleSettingRow'
+import { AISettingRow } from './AISettingRow'
 
 /** Required services: the sessions list/bindings, the slot registry, and locale registration. */
 export const inject = ['sessions', 'slots', 'locale']
@@ -38,6 +40,22 @@ export function apply(ctx: ClientContext): void {
   const source = new MascotSource(ctx.sessions)
   ctx.effect(() => () => source.dispose(), 'mascot: mood source')
 
+  // The idle-line rotator: fetches AI batches from the host route, degrades
+  // silently to the built-in pool; the view syncs its AI toggle.
+  const lines = new MascotLineSource({
+    locale: () => (ctx.locale.getLocale().active === 'en' ? 'en' : 'zh'),
+    fetchLines: async (locale) => {
+      const response = await fetch(`/mascot/lines?locale=${encodeURIComponent(locale)}`)
+      if (!response.ok) return []
+      const body = await response.json() as { lines?: unknown }
+      return Array.isArray(body.lines)
+        ? body.lines.filter((entry): entry is string => typeof entry === 'string')
+        : []
+    },
+  })
+  lines.start()
+  ctx.effect(() => () => lines.dispose(), 'mascot: line rotator')
+
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',
     id: 'ui-mascot',
@@ -45,8 +63,9 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     store,
     inject: (): MascotViewInjected => ({
-      hooks: { mascot: source },
+      hooks: { mascot: source, lines },
       openPeer: (sessionId) => { ctx.sessions.open(sessionId as SessionId) },
+      setAiLines: (enabled) => { lines.setAiEnabled(enabled) },
     }),
   }, MascotView))
 
@@ -65,4 +84,12 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     store,
   }, BubbleSettingRow))
+
+  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
+    name: 'settings.general.item',
+    id: 'ui-mascot-ai',
+    order: 80,
+    locale: NS,
+    store,
+  }, AISettingRow))
 }

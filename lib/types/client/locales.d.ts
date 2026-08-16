@@ -10,6 +10,12 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export declare const zh: {
     readonly 'mood.idle': "我在呢，随时找我～";
+    readonly 'idle.line.0': "我在呢，随时找我～";
+    readonly 'idle.line.1': "专注干活吧，我陪着你～";
+    readonly 'idle.line.2': "要不要喝口水歇一下？";
+    readonly 'idle.line.3': "我在旁边守着，有事喊我～";
+    readonly 'idle.line.4': "慢慢来，我等你～";
+    readonly 'idle.line.5': "（伸了个懒腰）继续加油！";
     readonly 'mood.queued': "收到！排队开工";
     readonly 'mood.confirming.approval': "等你批准一下～";
     readonly 'mood.confirming.question': "有件事想问你～";
@@ -46,6 +52,8 @@ export declare const zh: {
     readonly 'skin.dog': "狗狗";
     readonly 'bubble.title': "显示状态气泡";
     readonly 'bubble.description': "始终显示气泡与状态文字（关闭后仅在悬停时显示）";
+    readonly 'ai.title': "AI 小剧场";
+    readonly 'ai.description': "偶尔让模型生成一句俏皮话，关闭后仅用内置文案";
     readonly 'peer.status.running': "运行中";
     readonly 'peer.status.stopping': "停止中";
     readonly 'badge.label': "{count} 个任务在跑";

@@ -36,6 +36,7 @@ function translate(key: MascotKey, params?: Record<string, unknown>): string {
 function bench(
   mood: Partial<MascotState> = {},
   openPeer: (sessionId: string) => void = () => {},
+  line = 'idle.line.0',
 ) {
   const store = createMascotStore().create()
   let frame: MascotState = {
@@ -57,8 +58,10 @@ function bench(
     ),
     actions: store.actions,
     useMascot: (selector) => selector(source.getSnapshot()),
+    useLines: (selector) => selector(line),
     t: translate,
     openPeer,
+    setAiLines: () => {},
     useSessions: (() => undefined) as never,
     useWorkspaces: (() => undefined) as never,
   }
@@ -183,6 +186,17 @@ describe('MascotView', () => {
     const view = render(<MascotView {...props} />)
     expect(bubbleOf(view).dataset.visible).toBe('true')
     expect(bubbleOf(view).textContent).toBe('我在呢，随时找我～')
+  })
+
+  it('shows the rotated idle line, including raw AI lines, while idle', () => {
+    const { props } = bench({}, () => {}, 'idle.line.3')
+    const builtin = render(<MascotView {...props} />)
+    expect(bubbleOf(builtin).textContent).toBe('我在旁边守着，有事喊我～')
+    builtin.unmount()
+
+    const { props: aiProps } = bench({}, () => {}, 'ai:今天的你也很棒！')
+    const ai = render(<MascotView {...aiProps} />)
+    expect(bubbleOf(ai).textContent).toBe('今天的你也很棒！')
   })
 
   it('hides the idle bubble when the toggle is off', () => {

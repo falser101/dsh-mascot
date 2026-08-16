@@ -60,6 +60,15 @@ describe('mascot browser plugin', () => {
     await b.fiber.dispose()
   })
 
+  it('exposes the line hook and the AI toggle on the overlay inject face', async () => {
+    const b = await bench()
+    const overlay = entryOf(b.ctx, 'shell.overlay')!
+    const face = overlay.inject!() as MascotViewInjected
+    expect(face.hooks.lines.getSnapshot()).toBeTypeOf('string')
+    expect(face.setAiLines).toBeTypeOf('function')
+    await b.fiber.dispose()
+  })
+
   it('registers the two settings rows over the same shared store', async () => {
     const b = await bench()
     const overlay = entryOf(b.ctx, 'shell.overlay')!
@@ -70,6 +79,9 @@ describe('mascot browser plugin', () => {
     }))
     expect(rows).toContainEqual(expect.objectContaining({
       id: 'ui-mascot-bubble', order: 70, locale: 'mascot', store: overlay.store,
+    }))
+    expect(rows).toContainEqual(expect.objectContaining({
+      id: 'ui-mascot-ai', order: 80, locale: 'mascot', store: overlay.store,
     }))
     await b.fiber.dispose()
   })

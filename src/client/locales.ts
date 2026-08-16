@@ -14,6 +14,13 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 export const zh = {
   // Steady status lines (always visible while the agent is busy).
   'mood.idle': '我在呢，随时找我～',
+  // Built-in idle rotation pool (AI-generated lines mix in at ~1/5).
+  'idle.line.0': '我在呢，随时找我～',
+  'idle.line.1': '专注干活吧，我陪着你～',
+  'idle.line.2': '要不要喝口水歇一下？',
+  'idle.line.3': '我在旁边守着，有事喊我～',
+  'idle.line.4': '慢慢来，我等你～',
+  'idle.line.5': '（伸了个懒腰）继续加油！',
   'mood.queued': '收到！排队开工',
   'mood.confirming.approval': '等你批准一下～',
   'mood.confirming.question': '有件事想问你～',
@@ -54,6 +61,8 @@ export const zh = {
   'skin.dog': '狗狗',
   'bubble.title': '显示状态气泡',
   'bubble.description': '始终显示气泡与状态文字（关闭后仅在悬停时显示）',
+  'ai.title': 'AI 小剧场',
+  'ai.description': '偶尔让模型生成一句俏皮话，关闭后仅用内置文案',
   'peer.status.running': '运行中',
   'peer.status.stopping': '停止中',
   'badge.label': '{count} 个任务在跑',
@@ -62,6 +71,12 @@ export const zh = {
 /** English dictionary, key-identical to the Chinese source of truth. */
 export const en: Record<MascotKey, string> = {
   'mood.idle': 'Here whenever you need me～',
+  'idle.line.0': 'Here whenever you need me～',
+  'idle.line.1': 'Focus on work, I will keep you company～',
+  'idle.line.2': 'Care for a sip of water and a break?',
+  'idle.line.3': 'I am right here, call me anytime～',
+  'idle.line.4': 'Take your time, I will wait～',
+  'idle.line.5': '（stretches）Keep going!',
   'mood.queued': 'Got it! Joining the queue',
   'mood.confirming.approval': 'Waiting for your approval～',
   'mood.confirming.question': 'Something to ask you～',
@@ -98,6 +113,8 @@ export const en: Record<MascotKey, string> = {
   'skin.dog': 'Dog',
   'bubble.title': 'Show status bubble',
   'bubble.description': 'Keep the bubble with status text always visible (off: only on hover)',
+  'ai.title': 'AI vignettes',
+  'ai.description': 'Occasionally let the model write a playful line (off: built-in lines only)',
   'peer.status.running': 'running',
   'peer.status.stopping': 'stopping',
   'badge.label': '{count} tasks running',

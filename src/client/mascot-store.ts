@@ -34,6 +34,8 @@ export interface MascotUiState {
   skin: SkinId
   /** Whether the status bubble stays visible while the agent is busy. */
   bubbleAlways: boolean
+  /** Whether AI-generated idle lines may mix into the rotation. */
+  aiLines: boolean
 }
 
 export interface MascotActions {
@@ -45,6 +47,8 @@ export interface MascotActions {
   setSkin(draft: MascotUiState, skin: SkinId): void
   /** Toggle the always-visible busy bubble. */
   setBubbleAlways(draft: MascotUiState, bubbleAlways: boolean): void
+  /** Toggle AI-generated idle lines. */
+  setAiLines(draft: MascotUiState, aiLines: boolean): void
 }
 
 /** Store declaration: one persisted root-scope instance shared by all entries. */
@@ -54,6 +58,7 @@ export const createMascotStore = () => defineStore({
     collapsed: false,
     skin: 'cat',
     bubbleAlways: true,
+    aiLines: true,
   }),
   persist: 'dsh-client-ui-mascot',
   actions: {
@@ -69,6 +74,9 @@ export const createMascotStore = () => defineStore({
     },
     setBubbleAlways: (draft, bubbleAlways) => {
       draft.bubbleAlways = bubbleAlways
+    },
+    setAiLines: (draft, aiLines) => {
+      draft.aiLines = aiLines
     },
   } satisfies MascotActions,
 })
