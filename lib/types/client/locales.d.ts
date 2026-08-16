@@ -50,6 +50,7 @@ export declare const zh: {
     readonly 'skin.description': "选择悬浮在界面上的小伙伴";
     readonly 'skin.cat': "猫咪";
     readonly 'skin.dog': "狗狗";
+    readonly 'skin.custom': "自定义形象";
     readonly 'bubble.title': "显示状态气泡";
     readonly 'bubble.description': "始终显示气泡与状态文字（关闭后仅在悬停时显示）";
     readonly 'ai.title': "AI 小剧场";

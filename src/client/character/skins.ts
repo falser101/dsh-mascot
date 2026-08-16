@@ -11,9 +11,10 @@ import type { MascotMood } from '../mascot-source.ts'
 import type { MascotKey } from '../locales.ts'
 import { CatSkin } from './CatSkin'
 import { DogSkin } from './DogSkin'
+import { ImageSkin } from './ImageSkin'
 
 /** A skin id; extend the union when a new skin joins the registry. */
-export type SkinId = 'cat' | 'dog'
+export type SkinId = 'cat' | 'dog' | 'custom'
 
 /** Props every skin component receives from the widget. */
 export interface SkinProps {
@@ -36,6 +37,7 @@ export interface SkinDefinition {
 export const SKINS: readonly SkinDefinition[] = [
   { id: 'cat', labelKey: 'skin.cat', Component: CatSkin },
   { id: 'dog', labelKey: 'skin.dog', Component: DogSkin },
+  { id: 'custom', labelKey: 'skin.custom', Component: ImageSkin },
 ]
 
 /** Resolve one skin definition by id (fallback: the first installed skin). */

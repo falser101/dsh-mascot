@@ -25,7 +25,7 @@ A draggable animated floating companion for the DeepSeek Harness web GUI (`dsh w
 - **并行感知**：多会话 / 子代理 / 后台任务同时执行时，角色右上角出现数字徽章（≥2 个执行单元）；悬停时气泡切换为任务列表（哪个会话、哪个任务在跑，会话/子代理行可点击直接跳转）；当前会话空闲但别处在忙时，气泡常显「别处还有 N 个任务在忙」。
 - **点击**：随机说一句俏皮话；并行提示时点击任务行跳转到对应会话。
 - **双击**：收起成小圆点 / 唤出。
-- **形象切换**：设置页 → 通用 → 「悬浮伙伴形象」选择猫咪/狗狗，选择持久化。
+- **形象切换**：设置页 → 通用 → 「悬浮伙伴形象」选择猫咪/狗狗/**自定义形象**（AI 生成图），选择持久化。
 - 中英双语文案（跟随界面语言）；尊重 `prefers-reduced-motion`（系统减弱动态时动画关闭）。
 
 ## 效果演示
@@ -81,7 +81,11 @@ pnpm test         # vitest（35 个用例：状态机折叠 / store 持久化 / 
 
 开发期类型与测试解析依赖 Harness 仓库源码（`tsconfig.base.json` 的 paths），当前通过 `vitest.config.ts` / `tsconfig.json` 中的绝对路径指向本机 checkout；分发产物不依赖该路径。
 
-## 自定义形象
+## 自定义形象（AI 生成图）
+
+素材（`docs/*.jpg`，AI 工具生成，见 `docs/character-art-prompts.md` 提示词包）经 `scripts/build-art-assets.mjs` 处理：白底抠图（chroma-key）→ 512px → WebP 透明 → base64 内联进 bundle（`src/client/character/generated.ts`，仅约 290 KiB）。`ImageSkin` 皮肤把全身图与表情帧叠合：表情按状态切换（正常/开心/难过/思考/闭眼），4 秒眨眼一次，整体动画（呼吸/弹跳/摇晃/庆祝）接入全部 mood。
+
+换图流程：把新图放进 `docs/`（同名覆盖）→ `node scripts/build-art-assets.mjs` → 重新构建。摆位坐标（`BODY`/`HEAD` 常量，120×120 viewBox）在图变化时可能需要微调——在 `src/client/character/ImageSkin.tsx` 里改。
 
 角色皮肤是自包含的 SVG 组件（`src/client/character/`）：
 

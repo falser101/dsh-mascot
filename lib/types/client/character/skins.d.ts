@@ -10,7 +10,7 @@ import type { FC } from 'react';
 import type { MascotMood } from '../mascot-source.ts';
 import type { MascotKey } from '../locales.ts';
 /** A skin id; extend the union when a new skin joins the registry. */
-export type SkinId = 'cat' | 'dog';
+export type SkinId = 'cat' | 'dog' | 'custom';
 /** Props every skin component receives from the widget. */
 export interface SkinProps {
     /** The current mood; drives the per-part animations. */
