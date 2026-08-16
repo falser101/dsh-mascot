@@ -30,7 +30,7 @@ A draggable animated floating companion for the DeepSeek Harness web GUI (`dsh w
 
 ![悬浮伙伴交互演示](demo/mascot-interactions.gif)
 
-上图录制于无 key 的干净实例：悬停安慰文案 → 点击俏皮话 → 拖拽移动 → 设置切换皮肤。会话状态类动画与常显气泡（思考/调工具/完成等）需要真实对话触发，见下文"状态反应"表。
+上图录制于无 key 的干净实例：初始空闲 → 悬停气泡 → 拖拽移动 → 双击收起（旧版交互）。新版交互——活跃状态常显气泡、悬停安慰文案、忙碌标记、设置页开关——需要真实对话触发或悬停体验，见下文"状态反应"表。
 
 ## 安装（给使用者）
 
