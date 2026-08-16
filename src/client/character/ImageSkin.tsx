@@ -15,8 +15,10 @@ import css from './ImageSkin.module.css'
 /** Full-body art placement in the 120×120 viewBox (from docs/ analysis). */
 const BODY = { x: 18, y: 9, w: 71, h: 100 }
 
-/** Expression-frame overlay box (the head area of the body art). */
-const HEAD = { x: 25, y: 8, w: 57, h: 48 }
+/** Expression-frame overlay box. Must cover the FULL head of the body art
+ *  (the body image includes its own face) so the expression frame is the
+ *  only visible face; generous margins absorb pose differences. */
+const HEAD = { x: 14, y: 3, w: 92, h: 64 }
 
 /** Blink cadence: close every BLINK_MS for BLINK_CLOSED_MS. */
 const BLINK_MS = 4000
