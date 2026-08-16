@@ -202,6 +202,35 @@ describe('MascotView', () => {
     }
   })
 
+  it('follows the configured cadence levels', () => {
+    vi.useFakeTimers()
+    try {
+      const { props, store } = bench()
+      const view = render(<MascotView {...props} />)
+      // Standard: pops immediately, hides after 8s.
+      act(() => { vi.advanceTimersByTime(8000) })
+      expect(bubbleOf(view).dataset.visible).toBe('false')
+      act(() => { vi.advanceTimersByTime(32_000) })
+      expect(bubbleOf(view).dataset.visible).toBe('true')
+
+      // Lively: shorter window and interval.
+      act(() => { store.actions.setPopCadence('lively') })
+      act(() => { vi.advanceTimersByTime(20_000) })
+      expect(bubbleOf(view).dataset.visible).toBe('true')
+      act(() => { vi.advanceTimersByTime(6000) })
+      expect(bubbleOf(view).dataset.visible).toBe('false')
+
+      // Quiet: long silence.
+      act(() => { store.actions.setPopCadence('quiet') })
+      act(() => { vi.advanceTimersByTime(59_000) })
+      expect(bubbleOf(view).dataset.visible).toBe('false')
+      act(() => { vi.advanceTimersByTime(1000) })
+      expect(bubbleOf(view).dataset.visible).toBe('true')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('keeps the bubble visible continuously while idle when hovered', () => {
     const { props } = bench()
     const view = render(<MascotView {...props} />)

@@ -22,6 +22,7 @@ import { MascotView, type MascotViewInjected } from './MascotView'
 import { SkinSettingRow } from './SkinSettingRow'
 import { BubbleSettingRow } from './BubbleSettingRow'
 import { AISettingRow } from './AISettingRow'
+import { CadenceSettingRow } from './CadenceSettingRow'
 
 /** Required services: the sessions list/bindings, the slot registry, and locale registration. */
 export const inject = ['sessions', 'slots', 'locale']
@@ -92,4 +93,12 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     store,
   }, AISettingRow))
+
+  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
+    name: 'settings.general.item',
+    id: 'ui-mascot-cadence',
+    order: 90,
+    locale: NS,
+    store,
+  }, CadenceSettingRow))
 }

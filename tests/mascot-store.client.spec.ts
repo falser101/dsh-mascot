@@ -20,6 +20,7 @@ describe('createMascotStore', () => {
       skin: 'cat',
       bubbleAlways: true,
       aiLines: true,
+      popCadence: 'standard',
     })
   })
 
@@ -29,8 +30,9 @@ describe('createMascotStore', () => {
     store.actions.setCollapsed(true)
     store.actions.setSkin('dog')
     store.actions.setBubbleAlways(false)
+    store.actions.setPopCadence('lively')
     expect(store.getSnapshot()).toMatchObject({
-      x: 30, y: 40, collapsed: true, skin: 'dog', bubbleAlways: false,
+      x: 30, y: 40, collapsed: true, skin: 'dog', bubbleAlways: false, popCadence: 'lively',
     })
   })
 

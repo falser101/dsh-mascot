@@ -22,6 +22,9 @@ function defaultPosition(): { x: number; y: number } {
   }
 }
 
+/** Idle pop-up cadence levels (interval/duration pairs live in the view). */
+export type PopCadence = 'quiet' | 'standard' | 'lively'
+
 /** Persisted UI state shared by the overlay entry and the settings rows. */
 export interface MascotUiState {
   /** Top-left corner of the character box, in viewport px. */
@@ -36,6 +39,8 @@ export interface MascotUiState {
   bubbleAlways: boolean
   /** Whether AI-generated idle lines may mix into the rotation. */
   aiLines: boolean
+  /** Idle pop-up cadence level. */
+  popCadence: PopCadence
 }
 
 export interface MascotActions {
@@ -49,6 +54,8 @@ export interface MascotActions {
   setBubbleAlways(draft: MascotUiState, bubbleAlways: boolean): void
   /** Toggle AI-generated idle lines. */
   setAiLines(draft: MascotUiState, aiLines: boolean): void
+  /** Set the idle pop-up cadence level. */
+  setPopCadence(draft: MascotUiState, cadence: PopCadence): void
 }
 
 /** Store declaration: one persisted root-scope instance shared by all entries. */
@@ -59,6 +66,7 @@ export const createMascotStore = () => defineStore({
     skin: 'cat',
     bubbleAlways: true,
     aiLines: true,
+    popCadence: 'standard',
   }),
   persist: 'dsh-client-ui-mascot',
   actions: {
@@ -77,6 +85,9 @@ export const createMascotStore = () => defineStore({
     },
     setAiLines: (draft, aiLines) => {
       draft.aiLines = aiLines
+    },
+    setPopCadence: (draft, cadence) => {
+      draft.popCadence = cadence
     },
   } satisfies MascotActions,
 })

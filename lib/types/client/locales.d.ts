@@ -54,6 +54,11 @@ export declare const zh: {
     readonly 'bubble.description': "始终显示气泡与状态文字（关闭后仅在悬停时显示）";
     readonly 'ai.title': "AI 小剧场";
     readonly 'ai.description': "偶尔让模型生成一句俏皮话，关闭后仅用内置文案";
+    readonly 'cadence.title': "闲置弹出频率";
+    readonly 'cadence.description': "闲置时气泡自动弹出的频率";
+    readonly 'cadence.quiet': "安静";
+    readonly 'cadence.standard': "标准";
+    readonly 'cadence.lively': "热闹";
     readonly 'peer.status.running': "运行中";
     readonly 'peer.status.stopping': "停止中";
     readonly 'badge.label': "{count} 个任务在跑";

@@ -13,7 +13,7 @@ import type {
 } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
 import type { BusyPeer, MascotMood, MascotState } from './mascot-source'
-import { createMascotStore, MASCOT_SIZE } from './mascot-store'
+import { createMascotStore, MASCOT_SIZE, type PopCadence } from './mascot-store'
 import { skinOf } from './character/skins'
 import { AI_LINE_PREFIX } from './mascot-lines'
 import type { MascotKey, NS } from './locales'
@@ -59,11 +59,12 @@ const BUSY_MOODS: readonly MascotMood[] = [
 /** Moods that show the animated busy marker in the bubble corner. */
 const MARKED_MOODS: readonly MascotMood[] = ['thinking', 'working', 'streaming']
 
-/** How long an idle pop-up stays visible, ms. */
-const IDLE_POP_MS = 8000
-
-/** How often the idle bubble pops up on its own, ms. */
-const IDLE_POP_INTERVAL_MS = 40_000
+/** Idle pop-up timing per cadence level (visible duration, interval). */
+const IDLE_POP_CADENCES: Record<PopCadence, { readonly durationMs: number; readonly intervalMs: number }> = {
+  quiet: { durationMs: 6000, intervalMs: 60_000 },
+  standard: { durationMs: 8000, intervalMs: 40_000 },
+  lively: { durationMs: 6000, intervalMs: 20_000 },
+}
 
 /** Badge threshold: show the parallel-count badge from two executions on. */
 const BADGE_MIN = 2
@@ -138,9 +139,10 @@ export function MascotView(props: MascotViewProps) {
   }, [state.aiLines, setAiLines])
 
   // Idle pop-ups: while idle (and the bubble toggle is on) the bubble shows
-  // itself briefly, hides, and pops up again on a cadence — the "occasional
-  // AI vignette" behavior; busy moods stay permanently visible instead.
+  // itself briefly, hides, and pops up again on the configured cadence — the
+  // "occasional AI vignette" behavior; busy moods stay permanently visible.
   const isIdle = mascot.mood === 'idle'
+  const cadence = IDLE_POP_CADENCES[state.popCadence] ?? IDLE_POP_CADENCES.standard
   useEffect(() => {
     if (!isIdle || !state.bubbleAlways) {
       setPopVisible(false)
@@ -155,16 +157,16 @@ export function MascotView(props: MascotViewProps) {
       hideTimer = setTimeout(() => {
         shown = false
         setPopVisible(false)
-      }, IDLE_POP_MS)
+      }, cadence.durationMs)
     }
     show()
-    const interval = setInterval(show, IDLE_POP_INTERVAL_MS)
+    const interval = setInterval(show, cadence.intervalMs)
     return () => {
       clearInterval(interval)
       if (hideTimer !== undefined) clearTimeout(hideTimer)
       setPopVisible(false)
     }
-  }, [isIdle, state.bubbleAlways])
+  }, [isIdle, state.bubbleAlways, cadence.durationMs, cadence.intervalMs])
 
   // Keep the widget inside the viewport when the window shrinks.
   useEffect(() => {
