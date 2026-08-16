@@ -39,7 +39,7 @@ describe('BubbleSettingRow', () => {
   it('renders the preference row with the switch on by default', () => {
     const { props } = bench()
     const view = render(<BubbleSettingRow {...props} />)
-    expect(view.getByText('忙碌时显示气泡')).not.toBeNull()
+    expect(view.getByText('显示状态气泡')).not.toBeNull()
     const toggle = view.getByRole('switch')
     expect(toggle.getAttribute('aria-checked')).toBe('true')
   })

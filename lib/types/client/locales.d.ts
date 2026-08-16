@@ -44,8 +44,8 @@ export declare const zh: {
     readonly 'skin.description': "选择悬浮在界面上的小伙伴";
     readonly 'skin.cat': "猫咪";
     readonly 'skin.dog': "狗狗";
-    readonly 'bubble.title': "忙碌时显示气泡";
-    readonly 'bubble.description': "AI 思考、调用工具或写答案时，自动显示状态气泡";
+    readonly 'bubble.title': "显示状态气泡";
+    readonly 'bubble.description': "始终显示气泡与状态文字（关闭后仅在悬停时显示）";
     readonly 'peer.status.running': "运行中";
     readonly 'peer.status.stopping': "停止中";
     readonly 'badge.label': "{count} 个任务在跑";

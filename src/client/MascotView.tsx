@@ -46,11 +46,6 @@ const IDLE_HOVER_KEYS: readonly MascotKey[] = [
   'hover.idle.0', 'hover.idle.1', 'hover.idle.2', 'hover.idle.3', 'hover.idle.4',
 ]
 
-/** Moods that keep the bubble visible without a hover (the agent is busy). */
-const BUSY_MOODS: readonly MascotMood[] = [
-  'queued', 'confirming', 'thinking', 'working', 'streaming', 'error', 'elsewhere',
-]
-
 /** Moods that show the animated busy marker in the bubble corner. */
 const MARKED_MOODS: readonly MascotMood[] = ['thinking', 'working', 'streaming']
 
@@ -179,7 +174,6 @@ export function MascotView(props: MascotViewProps) {
 
   const skin = skinOf(state.skin)
   const Skin = skin.Component
-  const busy = BUSY_MOODS.includes(mascot.mood)
   const busyMarked = MARKED_MOODS.includes(mascot.mood)
   const showPeerList = hovering && mascot.peers.length > 1
   const bubbleText = state.collapsed
@@ -189,7 +183,7 @@ export function MascotView(props: MascotViewProps) {
   const bubbleVisible = poke !== null
     || mascot.until !== undefined
     || hovering
-    || (state.bubbleAlways && busy)
+    || state.bubbleAlways
   const showBadge = mascot.busyCount >= BADGE_MIN
 
   const rootClass = [

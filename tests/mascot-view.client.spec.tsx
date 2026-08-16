@@ -74,7 +74,7 @@ describe('MascotView', () => {
     localStorage.clear()
   })
 
-  it('renders the character with the idle mood and a hidden bubble', () => {
+  it('renders the character with the idle mood and an always-visible bubble', () => {
     const { props } = bench()
     const view = render(<MascotView {...props} />)
     const svg = view.container.querySelector('svg')
@@ -82,7 +82,7 @@ describe('MascotView', () => {
     expect(svg?.getAttribute('data-mood')).toBe('idle')
     const bubble = bubbleOf(view)
     expect(bubble.textContent).toBe('我在呢，随时找我～')
-    expect(bubble.dataset.visible).toBe('false')
+    expect(bubble.dataset.visible).toBe('true')
   })
 
   it('shows the transient bubble with the running tool name', () => {
@@ -132,7 +132,8 @@ describe('MascotView', () => {
       expect(['别戳我啦～', '痒痒的！喵？']).toContain(bubble.textContent)
 
       act(() => { vi.advanceTimersByTime(2100) })
-      expect(bubbleOf(view).dataset.visible).toBe('false')
+      // The always-visible bubble stays up; the poke line is gone.
+      expect(bubbleOf(view).textContent).toBe('我在呢，随时找我～')
     } finally {
       vi.useRealTimers()
     }
@@ -177,8 +178,16 @@ describe('MascotView', () => {
     expect(bubbleOf(view).dataset.visible).toBe('false')
   })
 
-  it('keeps the bubble hidden while idle without a hover', () => {
+  it('keeps the bubble visible while idle too, when the toggle is on', () => {
     const { props } = bench()
+    const view = render(<MascotView {...props} />)
+    expect(bubbleOf(view).dataset.visible).toBe('true')
+    expect(bubbleOf(view).textContent).toBe('我在呢，随时找我～')
+  })
+
+  it('hides the idle bubble when the toggle is off', () => {
+    const { props, store } = bench()
+    store.actions.setBubbleAlways(false)
     const view = render(<MascotView {...props} />)
     expect(bubbleOf(view).dataset.visible).toBe('false')
   })
