@@ -24,7 +24,29 @@
     "types": [
       "node",
       "react"
-    ]
+    ],
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "paths": {
+      "@deepseek-ai/dsh-api-remotes": [
+        "/home/falser/Projects/deepseek-harness/packages/api/remotes/src"
+      ],
+      "@deepseek-ai/dsh-api-remotes/client": [
+        "/home/falser/Projects/deepseek-harness/packages/api/remotes/src/client"
+      ],
+      "@deepseek-ai/dsh-client-connection": [
+        "/home/falser/Projects/deepseek-harness/packages/client/connection/src"
+      ],
+      "@deepseek-ai/dsh-client-connection/client": [
+        "/home/falser/Projects/deepseek-harness/packages/client/connection/src/client"
+      ],
+      "@deepseek-ai/dsh-host-apiproxy": [
+        "/home/falser/Projects/deepseek-harness/packages/host/apiproxy/src"
+      ],
+      "@deepseek-ai/dsh-host-apiproxy/api": [
+        "/home/falser/Projects/deepseek-harness/packages/host/apiproxy/src/api"
+      ]
+    }
   },
   "include": [
     "src"

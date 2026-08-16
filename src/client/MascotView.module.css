@@ -106,6 +106,78 @@
   40% { opacity: 1; transform: translateY(-2.5px); }
 }
 
+/* ---- busy badge: parallel execution count, top-right of the character ---- */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #e5484d;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
+  z-index: 2;
+}
+
+/* ---- hover peer list: parallel executions ---- */
+.bubbleList {
+  max-width: 300px;
+  white-space: normal;
+  padding: 6px 6px;
+}
+
+.peerList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.peerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.peerRowJump {
+  cursor: pointer;
+}
+
+.peerRowJump:hover {
+  background: rgb(0 0 0 / 0.06);
+}
+
+.peerIcon {
+  flex: none;
+  font-size: 14px;
+}
+
+.peerLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.peerStatus {
+  margin-left: auto;
+  flex: none;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
 /* ---- collapsed dot ---- */
 .root.collapsed {
   width: 44px;

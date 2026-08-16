@@ -15,10 +15,12 @@ export declare const zh: {
     readonly 'mood.confirming.question': "有件事想问你～";
     readonly 'mood.thinking': "让我想想…";
     readonly 'mood.working': "正在调用「{tool}」";
+    readonly 'mood.working.many': "正在调用「{tool}」等 {count} 个工具";
     readonly 'mood.streaming': "在写答案…";
     readonly 'mood.done': "搞定啦！🎉";
     readonly 'mood.error': "哎呀，出错了…";
     readonly 'mood.greeting': "你好呀！";
+    readonly 'mood.elsewhere': "别处还有 {count} 个任务在忙";
     readonly 'hover.idle.0': "我在呢，随时找我～";
     readonly 'hover.idle.1': "偷偷看你干活中…";
     readonly 'hover.idle.2': "要不要歇会儿？";
@@ -44,6 +46,9 @@ export declare const zh: {
     readonly 'skin.dog': "狗狗";
     readonly 'bubble.title': "忙碌时显示气泡";
     readonly 'bubble.description': "AI 思考、调用工具或写答案时，自动显示状态气泡";
+    readonly 'peer.status.running': "运行中";
+    readonly 'peer.status.stopping': "停止中";
+    readonly 'badge.label': "{count} 个任务在跑";
 };
 /** English dictionary, key-identical to the Chinese source of truth. */
 export declare const en: Record<MascotKey, string>;

@@ -33,9 +33,18 @@ function translate(key: MascotKey, params?: Record<string, unknown>): string {
   return text
 }
 
-function bench(mood: MascotState = { mood: 'idle', textKey: 'mood.idle' }) {
+function bench(
+  mood: Partial<MascotState> = {},
+  openPeer: (sessionId: string) => void = () => {},
+) {
   const store = createMascotStore().create()
-  let frame: MascotState = mood
+  let frame: MascotState = {
+    mood: 'idle',
+    textKey: 'mood.idle',
+    busyCount: 0,
+    peers: [],
+    ...mood,
+  }
   const source: ObservableSnapshot<MascotState> = {
     getSnapshot: () => frame,
     subscribe: () => () => {},
@@ -49,6 +58,7 @@ function bench(mood: MascotState = { mood: 'idle', textKey: 'mood.idle' }) {
     actions: store.actions,
     useMascot: (selector) => selector(source.getSnapshot()),
     t: translate,
+    openPeer,
     useSessions: (() => undefined) as never,
     useWorkspaces: (() => undefined) as never,
   }
@@ -145,6 +155,8 @@ describe('MascotView', () => {
     const { props } = bench({
       mood: 'thinking',
       textKey: 'mood.thinking',
+      busyCount: 1,
+      peers: [{ id: 's1', label: '会话一', kind: 'session', statusKey: 'mood.thinking' }],
     })
     const view = render(<MascotView {...props} />)
     const bubble = bubbleOf(view)
@@ -154,7 +166,12 @@ describe('MascotView', () => {
   })
 
   it('does not keep the bubble visible when the busy-bubble toggle is off', () => {
-    const { props, store } = bench({ mood: 'working', textKey: 'mood.working' })
+    const { props, store } = bench({
+      mood: 'working',
+      textKey: 'mood.working',
+      busyCount: 1,
+      peers: [{ id: 's1', label: '会话一', kind: 'session', statusKey: 'mood.working' }],
+    })
     store.actions.setBubbleAlways(false)
     const view = render(<MascotView {...props} />)
     expect(bubbleOf(view).dataset.visible).toBe('false')
@@ -167,7 +184,12 @@ describe('MascotView', () => {
   })
 
   it('swaps to a reassuring line while hovered and back after leaving', () => {
-    const { props } = bench({ mood: 'thinking', textKey: 'mood.thinking' })
+    const { props } = bench({
+      mood: 'thinking',
+      textKey: 'mood.thinking',
+      busyCount: 1,
+      peers: [{ id: 's1', label: '会话一', kind: 'session', statusKey: 'mood.thinking' }],
+    })
     const view = render(<MascotView {...props} />)
     const root = view.container.firstElementChild as HTMLElement
 
@@ -186,6 +208,51 @@ describe('MascotView', () => {
     fireEvent.mouseEnter(root)
     const text = bubbleOf(view).textContent!
     expect(['我在呢，随时找我～', '偷偷看你干活中…', '要不要歇会儿？', '（伸了个懒腰）', '今天的你也很棒！']).toContain(text)
+  })
+
+  it('shows the parallel badge from two executions on and hides it below', () => {
+    const { props } = bench({
+      mood: 'elsewhere',
+      textKey: 'mood.elsewhere',
+      busyCount: 2,
+      peers: [
+        { id: 's1', label: '会话一', kind: 'session', statusKey: 'mood.thinking' },
+        { id: 'job:b1', label: '跑个任务', kind: 'job', statusKey: 'peer.status.running' },
+      ],
+    })
+    const view = render(<MascotView {...props} />)
+    expect(view.container.querySelector('[class*="badge"]')).not.toBeNull()
+
+    const { props: solo } = bench({
+      mood: 'thinking',
+      textKey: 'mood.thinking',
+      busyCount: 1,
+      peers: [{ id: 's1', label: '会话一', kind: 'session', statusKey: 'mood.thinking' }],
+    })
+    const soloView = render(<MascotView {...solo} />)
+    expect(soloView.container.querySelector('[class*="badge"]')).toBeNull()
+  })
+
+  it('shows the peer list on hover during parallel executions and jumps on click', () => {
+    const jumped: string[] = []
+    const { props } = bench({
+      mood: 'elsewhere',
+      textKey: 'mood.elsewhere',
+      busyCount: 2,
+      peers: [
+        { id: 's1', label: '会话一', kind: 'session', statusKey: 'mood.thinking' },
+        { id: 'job:b1', label: '跑个任务', kind: 'job', statusKey: 'peer.status.running' },
+      ],
+    }, (id) => { jumped.push(id) })
+    const view = render(<MascotView {...props} />)
+    const root = view.container.firstElementChild as HTMLElement
+
+    fireEvent.mouseEnter(root)
+    expect(view.getByText('会话一')).not.toBeNull()
+    expect(view.getByText('跑个任务')).not.toBeNull()
+
+    fireEvent.click(view.getByText('会话一'))
+    expect(jumped).toEqual(['s1'])
   })
 
   it('respects a persisted collapsed state at first render', () => {

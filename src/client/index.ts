@@ -7,7 +7,7 @@
  * conversation snapshot into the mood frame the overlay entry renders
  * through its inject `hooks` compartment.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: merge the locale service's ctx face.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: merge the 'shell.overlay' SlotMap row (declared by ui-layout).
@@ -44,7 +44,10 @@ export function apply(ctx: ClientContext): void {
     order: 0,
     locale: NS,
     store,
-    inject: (): MascotViewInjected => ({ hooks: { mascot: source } }),
+    inject: (): MascotViewInjected => ({
+      hooks: { mascot: source },
+      openPeer: (sessionId) => { ctx.sessions.open(sessionId as SessionId) },
+    }),
   }, MascotView))
 
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({

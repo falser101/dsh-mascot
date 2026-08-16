@@ -4,14 +4,15 @@
  * bubble preference) and the inject-bound mood source; owns only
  * component-local interaction state (drag session, poke line, hover line).
  * All presentation derives from the mood frame; nothing here reaches the
- * session or the model.
+ * session or the model. The busy badge and hover peer list surface parallel
+ * executions from the fold's `busyCount`/`peers`.
  */
 import { useEffect, useRef, useState } from 'react'
 import type {
   InjectFace, PropsLocale, PropsRuntime, PropsStore,
 } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
-import type { MascotMood, MascotState } from './mascot-source'
+import type { BusyPeer, MascotMood, MascotState } from './mascot-source'
 import { createMascotStore, MASCOT_SIZE } from './mascot-store'
 import { skinOf } from './character/skins'
 import type { MascotKey, NS } from './locales'
@@ -23,6 +24,8 @@ export interface MascotViewInjected {
     /** Live mood frame of the current session. */
     mascot: ObservableSnapshot<MascotState>
   }
+  /** Jump to the session owning the given peer id (no-op for job peers). */
+  openPeer: (sessionId: string) => void
 }
 
 /** Full overlay-entry props: runtime kit + locale seat + store + inject face. */
@@ -45,11 +48,14 @@ const IDLE_HOVER_KEYS: readonly MascotKey[] = [
 
 /** Moods that keep the bubble visible without a hover (the agent is busy). */
 const BUSY_MOODS: readonly MascotMood[] = [
-  'queued', 'confirming', 'thinking', 'working', 'streaming', 'error',
+  'queued', 'confirming', 'thinking', 'working', 'streaming', 'error', 'elsewhere',
 ]
 
 /** Moods that show the animated busy marker in the bubble corner. */
 const MARKED_MOODS: readonly MascotMood[] = ['thinking', 'working', 'streaming']
+
+/** Badge threshold: show the parallel-count badge from two executions on. */
+const BADGE_MIN = 2
 
 /** The reassuring hover line for one steady mood. */
 function hoverKeyOf(mood: MascotMood, idleIndex: number): MascotKey {
@@ -61,8 +67,18 @@ function hoverKeyOf(mood: MascotMood, idleIndex: number): MascotKey {
     case 'working': return 'hover.working'
     case 'streaming': return 'hover.streaming'
     case 'error': return 'hover.error'
+    case 'elsewhere': return 'mood.elsewhere'
     case 'done': return 'mood.done'
     case 'greeting': return 'mood.greeting'
+  }
+}
+
+/** Small icon for one peer kind. */
+function peerIcon(kind: BusyPeer['kind']): string {
+  switch (kind) {
+    case 'session': return '💬'
+    case 'subagent': return '🧩'
+    case 'job': return '⏳'
   }
 }
 
@@ -87,11 +103,13 @@ function clampToViewport(x: number, y: number): { x: number; y: number } {
 /**
  * Render the draggable companion with its speech bubble. The bubble is
  * always visible while the agent is busy (unless the settings toggle turns
- * that off) and swaps to a reassuring line while hovered.
+ * that off), swaps to a reassuring line while hovered, and becomes a peer
+ * list while hovered during parallel executions. A badge counts parallel
+ * executions from two on.
  * @param props - composed overlay-entry props.
  */
 export function MascotView(props: MascotViewProps) {
-  const { useStore, actions, useMascot, t } = props
+  const { useStore, actions, useMascot, t, openPeer } = props
   const state = useStore(value => value)
   const mascot = useMascot(value => value)
   const [dragging, setDragging] = useState(false)
@@ -163,14 +181,16 @@ export function MascotView(props: MascotViewProps) {
   const Skin = skin.Component
   const busy = BUSY_MOODS.includes(mascot.mood)
   const busyMarked = MARKED_MOODS.includes(mascot.mood)
+  const showPeerList = hovering && mascot.peers.length > 1
   const bubbleText = state.collapsed
     ? t('collapse.hint')
     : poke?.text
-      ?? t(hovering ? hoverKeyOf(mascot.mood, idleHoverIndex) : mascot.textKey, mascot.params)
+      ?? t(hovering && !showPeerList ? hoverKeyOf(mascot.mood, idleHoverIndex) : mascot.textKey, mascot.params)
   const bubbleVisible = poke !== null
     || mascot.until !== undefined
     || hovering
     || (state.bubbleAlways && busy)
+  const showBadge = mascot.busyCount >= BADGE_MIN
 
   const rootClass = [
     css.root,
@@ -199,19 +219,45 @@ export function MascotView(props: MascotViewProps) {
       }}
     >
       <div
-        className={`${css.bubble}${bubbleVisible ? ` ${css.bubbleVisible}` : ''}`}
+        className={`${css.bubble}${bubbleVisible ? ` ${css.bubbleVisible}` : ''}${showPeerList ? ` ${css.bubbleList}` : ''}`}
         data-visible={bubbleVisible}
         role="status"
         aria-live="polite"
       >
-        <span key={bubbleText} className={css.bubbleText}>{bubbleText}</span>
-        {busyMarked && <span className={css.busy} aria-hidden="true"><i /><i /><i /></span>}
+        {showPeerList ? (
+          <ul className={css.peerList}>
+            {mascot.peers.map(peer => (
+              <li
+                key={peer.id}
+                className={`${css.peerRow}${peer.kind !== 'job' ? ` ${css.peerRowJump}` : ''}`}
+                onClick={peer.kind === 'job' ? undefined : () => { openPeer(peer.id) }}
+                role={peer.kind === 'job' ? undefined : 'button'}
+              >
+                <span className={css.peerIcon} aria-hidden="true">{peerIcon(peer.kind)}</span>
+                <span className={css.peerLabel}>{peer.label}</span>
+                <span className={css.peerStatus}>
+                  {peer.current ? '· ' : ''}{t(peer.statusKey, peer.statusParams)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <>
+            <span key={bubbleText} className={css.bubbleText}>{bubbleText}</span>
+            {busyMarked && <span className={css.busy} aria-hidden="true"><i /><i /><i /></span>}
+          </>
+        )}
       </div>
       {state.collapsed ? (
         <div className={css.dot} aria-hidden="true" />
       ) : (
         <div className={css.character}>
           <Skin mood={mascot.mood} dragging={dragging} />
+          {showBadge && (
+            <div className={css.badge} role="status" aria-label={t('badge.label', { count: mascot.busyCount })}>
+              {mascot.busyCount}
+            </div>
+          )}
         </div>
       )}
     </div>

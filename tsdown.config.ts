@@ -50,7 +50,7 @@ function sourceAssetPath(source: string, importer: string): string {
 
 const lib: UserConfig = {
   name: '@falser101/mascot',
-  entry: ['lib/types/index.js', 'lib/types/invariant.js'],
+  entry: ['src/index.ts', 'src/invariant.ts'],
   outDir: 'lib',
   format: ['esm'],
   platform: 'node',
@@ -62,7 +62,7 @@ const lib: UserConfig = {
 
 const client: UserConfig = {
   name: '@falser101/mascot/client',
-  entry: { client: 'lib/types/client/index.js' },
+  entry: { client: 'src/client/index.ts' },
   outDir: 'lib',
   format: 'cjs',
   platform: 'browser',

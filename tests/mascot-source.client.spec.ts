@@ -9,7 +9,8 @@ import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
 import { conversationSnapshot, TestSessions } from '@deepseek-ai/dsh-client-test-runtime'
 import type { Stabilizer } from '@deepseek-ai/dsh-client-test-runtime'
 import type { ConversationSnapshot } from '@deepseek-ai/dsh-client-runtime/client'
-import { deriveMascotState, MascotSource, MASCOT_TRANSIENT_MS } from '../src/client/mascot-source'
+import { deriveBusyContext, deriveMascotState, MascotSource, MASCOT_TRANSIENT_MS } from '../src/client/mascot-source'
+import type { SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
 
 const stabilize: Stabilizer = async (fn) => { await fn() }
 
@@ -195,5 +196,124 @@ describe('MascotSource over TestSessions', () => {
 
   it('reports the transient window duration as a positive constant', () => {
     expect(MASCOT_TRANSIENT_MS).toBeGreaterThan(0)
+  })
+
+  it('words the working line for parallel tool calls', () => {
+    const state = deriveMascotState(
+      snapshot({
+        running: true,
+        runningCalls: [{ name: 'bash' }, { name: 'grep' }] as never,
+      }),
+      SESSION_ID,
+      new Map(),
+    )
+    expect(state).toMatchObject({
+      mood: 'working',
+      textKey: 'mood.working.many',
+      params: { tool: 'bash', count: 2 },
+    })
+  })
+})
+
+describe('deriveBusyContext', () => {
+  function listState(overrides: Partial<SessionListState> = {}): SessionListState {
+    return {
+      ids: [], byId: {}, current: undefined, phase: 'ready',
+      subagentsByParent: {}, jobsBySession: {}, currentAddress: undefined,
+      ...overrides,
+    }
+  }
+
+  it('counts the current session, other running sessions, and live jobs', () => {
+    const list = listState({
+      ids: ['s1', 's2'] as never,
+      current: 's1' as never,
+      byId: {
+        s1: { id: 's1', displayTitle: '甲', running: false, blank: false, updatedAt: 1 },
+        s2: { id: 's2', displayTitle: '乙', running: true, blank: false, updatedAt: 2 },
+      } as never,
+      jobsBySession: {
+        s2: [{ id: 'bash-1', kind: 'bash', label: 'sleep 9', status: 'running' }],
+      } as never,
+    })
+    const current = snapshot({ running: true, runningCalls: [{ name: 'bash' } as never] })
+    const { busyCount, peers } = deriveBusyContext(list, current)
+    expect(busyCount).toBe(3)
+    expect(peers[0]).toMatchObject({ id: 's1', kind: 'session', current: true, label: '甲' })
+    expect(peers[1]).toMatchObject({ id: 's2', kind: 'session', statusKey: 'peer.status.running' })
+    expect(peers[2]).toMatchObject({ id: 'job:bash-1', kind: 'job', label: 'sleep 9' })
+  })
+
+  it('deduplicates jobs mirrored across sessions and skips settled ones', () => {
+    const list = listState({
+      byId: {},
+      jobsBySession: {
+        a: [{ id: 'bash-1', kind: 'bash', label: 'x', status: 'running' }],
+        b: [{ id: 'bash-1', kind: 'bash', label: 'x', status: 'running' }],
+        c: [{ id: 'bash-2', kind: 'bash', label: 'done', status: 'completed' }],
+      } as never,
+    })
+    const { busyCount, peers } = deriveBusyContext(list, snapshot())
+    expect(busyCount).toBe(1)
+    expect(peers).toHaveLength(1)
+    expect(peers[0]?.id).toBe('job:bash-1')
+  })
+
+  it('counts loaded subagent catalog children and stops at stopping jobs', () => {
+    const list = listState({
+      subagentsByParent: {
+        p1: {
+          state: 'ready',
+          error: null,
+          entries: [
+            { kind: 'child', id: 'c1', activity: 'running', hasChildren: false, label: '侦察兵' },
+            { kind: 'child', id: 'c2', activity: 'inactive', hasChildren: false },
+          ],
+        } as never,
+      },
+      jobsBySession: { p1: [{ id: 'w-1', kind: 'workflow', label: '批处理', status: 'stopping' }] } as never,
+    })
+    const { busyCount, peers } = deriveBusyContext(list, snapshot())
+    expect(busyCount).toBe(2)
+    expect(peers[0]).toMatchObject({ id: 'c1', kind: 'subagent', label: '侦察兵' })
+    expect(peers[1]).toMatchObject({ id: 'job:w-1', statusKey: 'peer.status.stopping' })
+  })
+})
+
+describe('MascotSource parallel context', () => {
+  async function bench() {
+    const ctx = new Context()
+    await ctx.plugin(SlotRegistry).await()
+    const sessions = new TestSessions(stabilize, ctx)
+    const source = new MascotSource(sessions)
+    return { sessions, source }
+  }
+
+  it('flips to elsewhere and counts peers when other sessions run', async () => {
+    const { sessions, source } = await bench()
+    await sessions.add({ id: 's1' })
+    await sessions.add({ id: 's2', summary: { running: true } }, { current: false })
+    expect(source.getSnapshot()).toMatchObject({
+      mood: 'elsewhere',
+      busyCount: 1,
+    })
+    expect(source.getSnapshot().peers[0]).toMatchObject({ id: 's2', kind: 'session' })
+    source.dispose()
+  })
+
+  it('refolds when a job lands or settles without moving the selection', async () => {
+    const { sessions, source } = await bench()
+    await sessions.add({ id: 's1' })
+    expect(source.getSnapshot().mood).toBe('greeting')
+    await sessions.list.update(draft => {
+      draft.jobsBySession = { s1: [{ id: 'bash-1', kind: 'bash', label: 'sleep', status: 'running' }] }
+    })
+    expect(source.getSnapshot().busyCount).toBe(1)
+    await sessions.list.update(draft => {
+      draft.jobsBySession = { s1: [{ id: 'bash-1', kind: 'bash', label: 'sleep', status: 'completed' }] }
+    })
+    expect(source.getSnapshot().busyCount).toBe(0)
+    expect(source.getSnapshot().mood).toBe('idle')
+    source.dispose()
   })
 })

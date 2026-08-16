@@ -19,10 +19,12 @@ export const zh = {
   'mood.confirming.question': '有件事想问你～',
   'mood.thinking': '让我想想…',
   'mood.working': '正在调用「{tool}」',
+  'mood.working.many': '正在调用「{tool}」等 {count} 个工具',
   'mood.streaming': '在写答案…',
   'mood.done': '搞定啦！🎉',
   'mood.error': '哎呀，出错了…',
   'mood.greeting': '你好呀！',
+  'mood.elsewhere': '别处还有 {count} 个任务在忙',
   // Hover lines: warm, reassuring copy that replaces the status line while
   // the pointer rests on the companion.
   'hover.idle.0': '我在呢，随时找我～',
@@ -52,6 +54,9 @@ export const zh = {
   'skin.dog': '狗狗',
   'bubble.title': '忙碌时显示气泡',
   'bubble.description': 'AI 思考、调用工具或写答案时，自动显示状态气泡',
+  'peer.status.running': '运行中',
+  'peer.status.stopping': '停止中',
+  'badge.label': '{count} 个任务在跑',
 } as const
 
 /** English dictionary, key-identical to the Chinese source of truth. */
@@ -62,10 +67,12 @@ export const en: Record<MascotKey, string> = {
   'mood.confirming.question': 'Something to ask you～',
   'mood.thinking': 'Let me think…',
   'mood.working': 'Running 「{tool}」',
+  'mood.working.many': 'Running 「{tool}」 and {count} more tools',
   'mood.streaming': 'Writing the answer…',
   'mood.done': 'Done! 🎉',
   'mood.error': 'Oops, something went wrong…',
   'mood.greeting': 'Hi there!',
+  'mood.elsewhere': 'Other tasks are busy elsewhere ({count})',
   'hover.idle.0': 'Here whenever you need me～',
   'hover.idle.1': 'Quietly watching you work…',
   'hover.idle.2': 'Care for a break?',
@@ -91,6 +98,9 @@ export const en: Record<MascotKey, string> = {
   'skin.dog': 'Dog',
   'bubble.title': 'Bubble while busy',
   'bubble.description': 'Show the status bubble while the AI thinks, runs tools, or writes',
+  'peer.status.running': 'running',
+  'peer.status.stopping': 'stopping',
+  'badge.label': '{count} tasks running',
 }
 
 /** Key domain of the `mascot` namespace (zh is the source of truth). */
