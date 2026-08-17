@@ -4,11 +4,7 @@
 
 A floating companion for the DeepSeek Harness web GUI (`dsh web`). A draggable cartoon cat or dog sits on the UI, changes expression with the current session, and chats in short lines. Drag it, click it, or double-click to tuck it away. Skins live on their own **Companion** settings page, picked from a thumbnail grid.
 
-[▶ Watch the demo](demo/mascot-interactions.mp4)
-
-<video src="demo/mascot-interactions.mp4" width="800" controls muted loop playsinline poster="demo/mascot-interactions.jpg">
-  <a href="demo/mascot-interactions.mp4">Demo video</a>
-</video>
+https://github.com/user-attachments/assets/3e2c4737-ffda-43fd-96af-e79537123468
 
 ## Looks
 
