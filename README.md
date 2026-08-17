@@ -4,7 +4,11 @@
 
 DeepSeek Harness（`dsh web`）的悬浮伙伴：一只可拖动的卡通猫或狗，停在界面上陪你干活。它跟着当前会话的状态换表情、说短句，也支持拖拽、点击、双击收起。设置页有独立的「悬浮伙伴」分区，用缩略图切换形象。
 
-![悬浮伙伴交互演示](demo/mascot-interactions.gif)
+[▶ 观看演示](demo/mascot-interactions.mp4)
+
+<video src="demo/mascot-interactions.mp4" width="800" controls muted loop playsinline poster="demo/mascot-interactions.jpg">
+  <a href="demo/mascot-interactions.mp4">演示视频</a>
+</video>
 
 ## 形象
 
