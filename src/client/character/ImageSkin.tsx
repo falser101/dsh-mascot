@@ -7,9 +7,15 @@
  */
 import { useEffect, useState } from 'react'
 import type { MascotMood } from '../mascot-source'
-import type { SkinProps } from './skins.ts'
+import type { SkinId, SkinProps } from './skins.ts'
 import { CHARACTER_ASSETS } from './generated.ts'
 import css from './ImageSkin.module.css'
+
+/** ImageSkin adds the character folder id on top of the widget skin props. */
+export interface ImageSkinProps extends SkinProps {
+  /** Which docs/<character>/ sprite set to show. */
+  character: SkinId
+}
 
 /** Every source frame is a 1:1 full-body sprite with identical padding.
  *  Place the whole image in the viewBox so scale and position stay locked. */
@@ -39,16 +45,16 @@ const FACE_BY_MOOD: Record<MascotMood, Face> = {
   elsewhere: 'neutral',
 }
 
-/** One inlined data-URI for a face key. */
-function faceUri(face: Face): string {
-  return `data:image/webp;base64,${CHARACTER_ASSETS[`face-${face}`]}`
+/** One inlined data-URI for a face key of one character. */
+function faceUri(character: SkinId, face: Face): string {
+  return `data:image/webp;base64,${CHARACTER_ASSETS[character][`face-${face}`]}`
 }
 
 /**
  * The AI-generated character skin.
- * @param props - skin props from the widget.
+ * @param props - skin props from the widget plus the character folder id.
  */
-export function ImageSkin({ mood, dragging }: SkinProps) {
+export function ImageSkin({ mood, dragging, character }: ImageSkinProps) {
   const [blinking, setBlinking] = useState(false)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -69,11 +75,11 @@ export function ImageSkin({ mood, dragging }: SkinProps) {
     >
       <g className={css.body}>
         {FACES.map(pre => (
-          <image key={`pre-${pre}`} href={faceUri(pre)} x="0" y="0" width="0" height="0" />
+          <image key={`pre-${pre}`} href={faceUri(character, pre)} x="0" y="0" width="0" height="0" />
         ))}
         <image
           className={css.face}
-          href={faceUri(face)}
+          href={faceUri(character, face)}
           x={FRAME.x}
           y={FRAME.y}
           width={FRAME.w}

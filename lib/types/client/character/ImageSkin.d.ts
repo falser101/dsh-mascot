@@ -1,6 +1,11 @@
-import type { SkinProps } from './skins.ts';
+import type { SkinId, SkinProps } from './skins.ts';
+/** ImageSkin adds the character folder id on top of the widget skin props. */
+export interface ImageSkinProps extends SkinProps {
+    /** Which docs/<character>/ sprite set to show. */
+    character: SkinId;
+}
 /**
  * The AI-generated character skin.
- * @param props - skin props from the widget.
+ * @param props - skin props from the widget plus the character folder id.
  */
-export declare function ImageSkin({ mood, dragging }: SkinProps): import("react").JSX.Element;
+export declare function ImageSkin({ mood, dragging, character }: ImageSkinProps): import("react").JSX.Element;

@@ -1,37 +1,34 @@
 /**
  * Mascot plugin, browser half: mounts the floating companion into the
- * frame-wide `shell.overlay` slot and its two preference rows (skin, busy
- * bubble) into General settings. One store handle is shared by every entry
- * (drag position, collapsed flag, active skin, bubble preference —
- * persisted), and one {@link MascotSource} folds the current session's
- * conversation snapshot into the mood frame the overlay entry renders
- * through its inject `hooks` compartment.
+ * frame-wide `shell.overlay` slot and its preference page into a dedicated
+ * settings section. One store handle is shared by every entry (drag
+ * position, collapsed flag, active skin, bubble preference — persisted),
+ * and one {@link MascotSource} folds the current session's conversation
+ * snapshot into the mood frame the overlay entry renders through its
+ * inject `hooks` compartment.
  */
 import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 // Type-only: merge the locale service's ctx face.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 // Type-only: merge the 'shell.overlay' SlotMap row (declared by ui-layout).
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
-// Type-only: merge the 'settings.general.item' SlotMap row (declared by ui-settings).
+// Type-only: merge the 'settings.section' SlotMap row (declared by ui-settings).
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { en, NS, zh } from './locales'
 import { createMascotStore } from './mascot-store'
 import { MascotSource } from './mascot-source'
 import { MascotLineSource } from './mascot-lines'
 import { MascotView, type MascotViewInjected } from './MascotView'
-import { SkinSettingRow } from './SkinSettingRow'
-import { BubbleSettingRow } from './BubbleSettingRow'
-import { AISettingRow } from './AISettingRow'
-import { CadenceSettingRow } from './CadenceSettingRow'
+import { MascotSettingsSection } from './MascotSettingsSection'
 
 /** Required services: the sessions list/bindings, the slot registry, and locale registration. */
 export const inject = ['sessions', 'slots', 'locale']
 
 /**
  * Client plugin body: register dictionaries, the mood source lifecycle, the
- * overlay entry, and the two settings rows. Every registration and
- * subscription rides the fiber's effect scope, so unload (and HMR) removes
- * all of them.
+ * overlay entry, and the dedicated settings section. Every registration
+ * and subscription rides the fiber's effect scope, so unload (and HMR)
+ * removes all of them.
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
@@ -70,35 +67,13 @@ export function apply(ctx: ClientContext): void {
     }),
   }, MascotView))
 
-  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
-    name: 'settings.general.item',
-    id: 'ui-mascot-skin',
-    order: 60,
-    locale: NS,
-    store,
-  }, SkinSettingRow))
-
-  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
-    name: 'settings.general.item',
-    id: 'ui-mascot-bubble',
+  const t = ctx.locale.bind(NS)
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section',
+    id: 'ui-mascot',
     order: 70,
+    label: () => t('nav'),
     locale: NS,
     store,
-  }, BubbleSettingRow))
-
-  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
-    name: 'settings.general.item',
-    id: 'ui-mascot-ai',
-    order: 80,
-    locale: NS,
-    store,
-  }, AISettingRow))
-
-  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
-    name: 'settings.general.item',
-    id: 'ui-mascot-cadence',
-    order: 90,
-    locale: NS,
-    store,
-  }, CadenceSettingRow))
+  }, MascotSettingsSection))
 }

@@ -1,16 +1,12 @@
 /**
- * Skin registry: the switchable character looks. Each skin is a self-contained
- * SVG component whose parts (body, head, ears, eyes, mouth, tail, plus
- * mood-only extras like sweat/tear/sparkle) are driven by CSS keyed on the
- * skin root's `data-mood` / `data-dragging` attributes. Swapping in custom
- * art later means adding a new skin here (or replacing a component) without
- * touching any other plugin code.
+ * Skin registry: the switchable character looks. Each skin is the AI-art
+ * ImageSkin bound to one character folder (docs/cat, docs/dog).
  */
 import type { FC } from 'react';
 import type { MascotMood } from '../mascot-source.ts';
 import type { MascotKey } from '../locales.ts';
-/** A skin id; extend the union when a new skin joins the registry. */
-export type SkinId = 'cat' | 'dog' | 'custom';
+/** A skin id; extend the union when a new character folder joins the registry. */
+export type SkinId = 'cat' | 'cat-ragdoll' | 'cat-maine' | 'cat-golden' | 'cat-silver' | 'dog' | 'dog-poodle' | 'dog-collie' | 'dog-corgi' | 'dog-shiba';
 /** Props every skin component receives from the widget. */
 export interface SkinProps {
     /** The current mood; drives the per-part animations. */
@@ -23,6 +19,8 @@ export interface SkinDefinition {
     readonly id: SkinId;
     /** Locale key of the skin's display label (settings row + switcher). */
     readonly labelKey: MascotKey;
+    /** Group used by the breed picker. */
+    readonly group: 'cat' | 'dog';
     /** The skin's SVG component. */
     readonly Component: FC<SkinProps>;
 }

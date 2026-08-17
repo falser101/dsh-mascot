@@ -2,7 +2,7 @@
 /**
  * Mascot plugin assembly on the real machinery: bare Context + production
  * SlotRegistry + LocaleRuntime + the TestSessions double, with the
- * `shell.overlay` and `settings.general.item` declarations supplied by the
+ * `shell.overlay` and `settings.section` declarations supplied by the
  * bench (the shipped composition declares them). Asserts both entries, the
  * mood source feeding the overlay inject face, and fiber-dispose removal
  * (HMR safety).
@@ -33,7 +33,7 @@ async function bench() {
     name: 'root',
     children: {
       'shell.overlay': { kind: 'list', scope: 'root' },
-      'settings.general.item': { kind: 'list', scope: 'root' },
+      'settings.section': { kind: 'list', scope: 'root' },
     },
   } as never, (() => null) as never)
   const fiber = ctx.plugin({ inject: [...inject], apply })
@@ -41,7 +41,7 @@ async function bench() {
   return { ctx, fiber, sessions: ctx.get('sessions') as TestSessions }
 }
 
-function entryOf(ctx: Context, slot: 'shell.overlay' | 'settings.general.item') {
+function entryOf(ctx: Context, slot: 'shell.overlay' | 'settings.section') {
   const entry = ctx.slots.entries(slot)[0]
   if (entry === undefined) return undefined
   return { ...entry.options, locale: entry.locale, inject: entry.inject, store: entry.store }
@@ -69,20 +69,18 @@ describe('mascot browser plugin', () => {
     await b.fiber.dispose()
   })
 
-  it('registers the two settings rows over the same shared store', async () => {
+  it('registers a dedicated settings section over the same shared store', async () => {
     const b = await bench()
     const overlay = entryOf(b.ctx, 'shell.overlay')!
-    const rows = b.ctx.slots.entries('settings.general.item')
-      .map(entry => ({ ...entry.options, locale: entry.locale, store: entry.store }))
-    expect(rows).toContainEqual(expect.objectContaining({
-      id: 'ui-mascot-skin', order: 60, locale: 'mascot', store: overlay.store,
-    }))
-    expect(rows).toContainEqual(expect.objectContaining({
-      id: 'ui-mascot-bubble', order: 70, locale: 'mascot', store: overlay.store,
-    }))
-    expect(rows).toContainEqual(expect.objectContaining({
-      id: 'ui-mascot-ai', order: 80, locale: 'mascot', store: overlay.store,
-    }))
+    const section = entryOf(b.ctx, 'settings.section')
+    expect(section).toMatchObject({
+      id: 'ui-mascot',
+      order: 70,
+      locale: 'mascot',
+      store: overlay.store,
+    })
+    expect(typeof section?.label).toBe('function')
+    expect((section?.label as () => string)()).toBe('悬浮伙伴')
     await b.fiber.dispose()
   })
 
@@ -108,7 +106,7 @@ describe('mascot browser plugin', () => {
     await b.fiber.dispose()
 
     expect(b.ctx.slots.entries('shell.overlay')).toHaveLength(0)
-    expect(b.ctx.slots.entries('settings.general.item')).toHaveLength(0)
+    expect(b.ctx.slots.entries('settings.section')).toHaveLength(0)
 
     await b.sessions.updateSnapshot(SESSION_ID, (draft) => {
       draft.running = true

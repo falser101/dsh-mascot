@@ -1,7 +1,7 @@
 /**
  * Mascot shared state: drag position, collapsed flag, and the active skin.
- * One handle is passed to both the overlay entry and the General-settings
- * row, so the two surfaces read and write the same root-scope instance;
+ * One handle is passed to both the overlay entry and the settings page,
+ * so the two surfaces read and write the same root-scope instance;
  * `persist` keeps the whole value in localStorage across reloads.
  */
 import { defineStore } from '@deepseek-ai/dsh-client-runtime/client'
@@ -68,7 +68,7 @@ export const createMascotStore = () => defineStore({
     aiLines: true,
     popCadence: 'standard',
   }),
-  persist: 'dsh-client-ui-mascot',
+  persist: 'dsh-client-ui-mascot-v2',
   actions: {
     move: (draft, x, y) => {
       draft.x = x

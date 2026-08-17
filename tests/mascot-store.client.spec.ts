@@ -11,7 +11,7 @@ describe('createMascotStore', () => {
     localStorage.clear()
   })
 
-  it('defaults to the bottom-right corner with the cat skin expanded', () => {
+  it('defaults to the bottom-right corner with the orange-cat art skin expanded', () => {
     const store = createMascotStore().create()
     expect(store.getSnapshot()).toEqual({
       x: window.innerWidth - MASCOT_SIZE - 24,
@@ -55,7 +55,7 @@ describe('createMascotStore', () => {
     expect(second.getSnapshot()).toMatchObject({
       x: 111, y: 222, collapsed: true, skin: 'dog', bubbleAlways: false,
     })
-    expect(localStorage.getItem('dsh-client-ui-mascot')).not.toBeNull()
+    expect(localStorage.getItem('dsh-client-ui-mascot-v2')).not.toBeNull()
   })
 
   it('leaves the persisted value alone when storage is unavailable', () => {

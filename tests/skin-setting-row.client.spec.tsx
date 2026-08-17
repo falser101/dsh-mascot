@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Skin-setting-row specs: the General-settings preference row renders the
- * current skin label, opens the menu, and switches the shared store.
+ * Skin-setting-row specs: the breed picker renders grouped thumbnails and
+ * writes the shared store when a card is clicked.
  */
 import { afterEach, describe, expect, it, beforeEach } from 'vitest'
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { createMascotStore } from '../src/client/mascot-store'
 import { zh, type MascotKey } from '../src/client/locales'
 import { SkinSettingRow, type SkinSettingRowProps } from '../src/client/SkinSettingRow'
@@ -32,23 +32,20 @@ describe('SkinSettingRow', () => {
     localStorage.clear()
   })
 
-  it('renders the preference row with the current skin label', () => {
+  it('renders grouped breed cards with the current skin selected', () => {
     const { props } = bench()
     const view = render(<SkinSettingRow {...props} />)
     expect(view.getByText('悬浮伙伴形象')).not.toBeNull()
-    expect(view.getByText('选择悬浮在界面上的小伙伴')).not.toBeNull()
     expect(view.getByText('猫咪')).not.toBeNull()
+    expect(view.getByText('狗狗')).not.toBeNull()
+    expect(view.getByRole('option', { name: '橘猫' }).getAttribute('aria-selected')).toBe('true')
   })
 
-  it('switches the skin through the menu and updates the label', async () => {
+  it('switches the skin through a breed card', () => {
     const { props, store } = bench()
     const view = render(<SkinSettingRow {...props} />)
-
-    fireEvent.click(view.getByRole('button'))
-    await waitFor(() => expect(view.getByText('狗狗')).not.toBeNull())
-    fireEvent.click(view.getByText('狗狗'))
-
-    expect(store.getSnapshot().skin).toBe('dog')
-    expect(view.getByText('狗狗')).not.toBeNull()
+    fireEvent.click(view.getByRole('option', { name: '柴犬' }))
+    expect(store.getSnapshot().skin).toBe('dog-shiba')
+    expect(view.getByRole('option', { name: '柴犬' }).getAttribute('aria-selected')).toBe('true')
   })
 })

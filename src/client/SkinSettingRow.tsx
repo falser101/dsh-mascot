@@ -1,62 +1,67 @@
 /**
- * General-settings preference row: the companion's active skin selector.
- * Reads and writes the shared mascot store, so the choice applies to the
- * overlay entry instantly and persists through the store's localStorage key.
+ * Companion-settings breed picker: grouped thumbnail grid of the installed
+ * cat and dog skins. Writes the shared mascot store so the overlay switches
+ * instantly and the choice persists.
  */
-import { useState } from 'react'
-import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import { IconChevronDownOutline14, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { PropsLocale, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 import { createMascotStore } from './mascot-store'
-import { SKINS, skinOf, type SkinId } from './character/skins'
+import { SKINS, type SkinId } from './character/skins'
+import { CHARACTER_ASSETS } from './character/generated'
 import type { NS } from './locales'
 import css from './SkinSettingRow.module.css'
 
-/** Full settings-row props: runtime kit + locale seat + shared store. */
+/** Full settings-row props: locale seat + shared store. */
 export type SkinSettingRowProps =
-  PropsRuntime<'settings.general.item'>
-  & PropsLocale<typeof NS>
+  PropsLocale<typeof NS>
   & PropsStore<ReturnType<typeof createMascotStore>>
 
+const GROUPS = [
+  { id: 'cat', labelKey: 'skin.group.cat' },
+  { id: 'dog', labelKey: 'skin.group.dog' },
+] as const
+
+/** Neutral-face preview URI for one registered skin. */
+function thumbUri(id: SkinId): string {
+  return `data:image/webp;base64,${CHARACTER_ASSETS[id]['face-neutral']}`
+}
+
 /**
- * Render the skin preference row with a menu selector.
+ * Render the breed picker.
  * @param props - composed settings-row props.
  */
 export function SkinSettingRow(props: SkinSettingRowProps) {
   const { useStore, actions, t } = props
   const state = useStore(value => value)
-  const [open, setOpen] = useState(false)
-  const selectedLabel = t(skinOf(state.skin).labelKey)
 
   return (
-    <div className={css.row}>
+    <div className={css.block}>
       <div className={css.rowText}>
         <div className={css.title}>{t('skin.title')}</div>
         <div className={css.desc}>{t('skin.description')}</div>
       </div>
-      <Menu
-        open={open}
-        onClose={() => { setOpen(false) }}
-        items={SKINS.map(skin => ({ id: skin.id, label: t(skin.labelKey) }))}
-        selectedId={state.skin}
-        onSelect={(id) => {
-          setOpen(false)
-          actions.setSkin(id as SkinId)
-        }}
-        align="end"
-        portal
-        anchor={(
-          <button
-            type="button"
-            className={css.selector}
-            aria-haspopup="menu"
-            aria-expanded={open}
-            onClick={() => { setOpen(value => !value) }}
-          >
-            {selectedLabel}
-            <IconChevronDownOutline14 className={css.chevron} />
-          </button>
-        )}
-      />
+      {GROUPS.map(group => (
+        <div key={group.id} className={css.group}>
+          <div className={css.groupLabel}>{t(group.labelKey)}</div>
+          <div className={css.grid} role="listbox" aria-label={t(group.labelKey)}>
+            {SKINS.filter(skin => skin.group === group.id).map(skin => {
+              const selected = state.skin === skin.id
+              return (
+                <button
+                  key={skin.id}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={selected ? `${css.card} ${css.cardOn}` : css.card}
+                  onClick={() => { actions.setSkin(skin.id) }}
+                >
+                  <img className={css.thumb} src={thumbUri(skin.id)} alt="" />
+                  <span className={css.cardLabel}>{t(skin.labelKey)}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

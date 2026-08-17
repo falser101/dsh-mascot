@@ -1,7 +1,21 @@
 {
   "name": "@falser101/mascot",
   "version": "0.1.0",
-  "description": "Draggable animated floating companion for the dsh web GUI: reacts to session activity with mood text and animation, supports drag/hover/click/double-click, and offers a skin switcher in General settings",
+  "description": "Draggable animated floating companion for the DeepSeek Harness web GUI, with cat and dog breed skins that react to the current session",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/falser101/dsh-mascot.git"
+  },
+  "homepage": "https://github.com/falser101/dsh-mascot#readme",
+  "bugs": {
+    "url": "https://github.com/falser101/dsh-mascot/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "mascot"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",

@@ -10,7 +10,7 @@ import { CHARACTER_ASSETS } from '../src/client/character/generated'
 import type { MascotMood } from '../src/client/mascot-source'
 
 function faceUri(face: string): string {
-  return `data:image/webp;base64,${CHARACTER_ASSETS[`face-${face}`]}`
+  return `data:image/webp;base64,${CHARACTER_ASSETS.cat[`face-${face}`]}`
 }
 
 afterEach(() => {
@@ -19,7 +19,7 @@ afterEach(() => {
 })
 
 function renderMood(mood: MascotMood) {
-  return render(<ImageSkin mood={mood} dragging={false} />)
+  return render(<ImageSkin character="cat" mood={mood} dragging={false} />)
 }
 
 function faceOf(view: ReturnType<typeof render>) {

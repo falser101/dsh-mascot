@@ -66,6 +66,8 @@ function analyze(file) {
   }
 }
 
-for (const file of readdirSync('docs').filter(f => f.endsWith('.jpg')).sort()) {
-  console.log(JSON.stringify(analyze(`docs/${file}`)))
+for (const character of ['cat', 'dog']) {
+  for (const file of readdirSync(`docs/${character}`).filter(f => f.endsWith('.jpg')).sort()) {
+    console.log(JSON.stringify(analyze(`docs/${character}/${file}`)))
+  }
 }

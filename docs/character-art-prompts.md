@@ -112,13 +112,13 @@ same full-body framing as the main sprite, same pose, same scale, same centered 
 ## 五、最终交付给我（命名规范）
 
 ```
-character/
-  body.png          ← 主形象全身（透明或白底）
-  face-neutral.png  ← 正常脸
-  face-happy.png    ← 开心脸
-  face-sad.png      ← 难过脸
-  face-thinking.png ← 思考脸
-  face-closed.png   ← 闭眼帧（可选）
+docs/<character>/          ← cat 或 dog，一种形象一个文件夹
+  主形象图.jpg
+  正常脸.jpg
+  开心脸.jpg
+  难过脸.jpg
+  思考脸.jpg
+  闭眼帧.jpg
 ```
 
 - PNG 格式，512×512 以上
@@ -128,5 +128,5 @@ character/
 
 ## 六、我做好的部分（等你素材回来直接拼）
 
-- `ImageSkin` 皮肤组件：读取 `docs/` 同构图全身帧 → 按 mood 整帧切换 → 接入 `data-mood` 动画契约
-- 换图：覆盖同名 jpg → `node scripts/build-art-assets.mjs` → 重新构建
+- `ImageSkin` 皮肤组件：读取 `docs/<character>/` 同构图全身帧 → 按 mood 整帧切换 → 接入 `data-mood` 动画契约
+- 换图：覆盖对应文件夹里的同名 jpg → `node scripts/build-art-assets.mjs` → 重新构建

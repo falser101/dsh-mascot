@@ -1,19 +1,18 @@
 /**
- * General-settings preference row: the idle pop-up cadence selector
+ * Companion-settings preference row: the idle pop-up cadence selector
  * (quiet / standard / lively). Reads and writes the shared mascot store,
  * so the choice applies to the overlay entry instantly and persists.
  */
 import { useState } from 'react'
-import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
+import type { PropsLocale, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 import { IconChevronDownOutline14, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
 import { createMascotStore, type PopCadence } from './mascot-store'
 import type { MascotKey, NS } from './locales'
 import css from './CadenceSettingRow.module.css'
 
-/** Full settings-row props: runtime kit + locale seat + shared store. */
+/** Full settings-row props: locale seat + shared store. */
 export type CadenceSettingRowProps =
-  PropsRuntime<'settings.general.item'>
-  & PropsLocale<typeof NS>
+  PropsLocale<typeof NS>
   & PropsStore<ReturnType<typeof createMascotStore>>
 
 /** The three cadence levels, in settings display order. */
