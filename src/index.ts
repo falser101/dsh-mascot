@@ -6,21 +6,54 @@
  * route from its line rotator; failures degrade to built-in lines there.
  */
 import type { Context } from '@deepseek-ai/cordis'
-import { BlockAssembler } from '@deepseek-ai/dsh-llm'
-import type { LlmRuntime } from '@deepseek-ai/dsh-llm'
-import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import type { MascotModelSelection } from './host-lines.ts'
 import {
   buildMascotLinesOptions, MascotLinesService, parseMascotLines,
-  type MascotLineLocale,
+  type MascotGenerateRequest, type MascotLineLocale,
 } from './host-lines.ts'
+
+/** One chunk from `ctx.llm.stream` — only the text fields this route reads. */
+interface StreamChunk {
+  readonly type: string
+  readonly text?: string
+  readonly block?: { readonly type?: string; readonly text?: string }
+}
+
+/** Concatenate text-delta chunks; fall back to a closed text block. */
+async function collectStreamText(
+  stream: AsyncIterable<StreamChunk>,
+): Promise<string> {
+  let text = ''
+  for await (const chunk of stream) {
+    if (chunk.type === 'text-delta' && typeof chunk.text === 'string') {
+      text += chunk.text
+    } else if (
+      chunk.type === 'block-end'
+      && chunk.block?.type === 'text'
+      && typeof chunk.block.text === 'string'
+      && text === ''
+    ) {
+      text = chunk.block.text
+    }
+  }
+  return text
+}
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
     /** Registered provider/model adapters. */
-    llm: LlmRuntime
+    llm: { stream(options: MascotGenerateRequest): AsyncIterable<StreamChunk> }
     /** HTTP route registration (the webserver plugin's face). */
-    webServer: WebServer
+    webServer: {
+      register(route: {
+        kind: 'exact'
+        path: string
+        handler: (req: { url?: string }, res: {
+          writeHead: (status: number, headers: Record<string, string>) => void
+          end: (body: string) => void
+        }) => void | Promise<void>
+      }): () => void
+    }
     /** The host's configured default model selection (structural slice of
      *  dsh-agent-default-model; see {@link MascotModelSelection}). */
     agentDefaultModel: { currentSelection(): MascotModelSelection }
@@ -39,16 +72,14 @@ export const MASCOT_LINES_PATH = '/mascot/lines'
  */
 export function apply(ctx: Context): void {
   ctx.effect(() => {
+    let disposed = false
     const service = new MascotLinesService(async (locale: MascotLineLocale) => {
+      if (disposed) return []
       const selection = ctx.agentDefaultModel.currentSelection()
-      const assembler = new BlockAssembler()
-      for await (const chunk of ctx.llm.stream(buildMascotLinesOptions(selection, locale))) {
-        assembler.push(chunk)
-      }
-      const text = assembler.blocks()
-        .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
-        .map(block => block.text)
-        .join('')
+      const text = await collectStreamText(
+        ctx.llm.stream(buildMascotLinesOptions(selection, locale)),
+      )
+      if (disposed) return []
       return parseMascotLines(text) ?? []
     })
 
@@ -56,6 +87,11 @@ export function apply(ctx: Context): void {
       kind: 'exact',
       path: MASCOT_LINES_PATH,
       handler: async (req, res) => {
+        if (disposed) {
+          res.writeHead(503, { 'content-type': 'application/json; charset=utf-8' })
+          res.end(JSON.stringify({ error: 'mascot lines unavailable' }))
+          return
+        }
         const locale: MascotLineLocale = new URL(req.url ?? '/', 'http://localhost')
           .searchParams.get('locale') === 'en' ? 'en' : 'zh'
         try {
@@ -68,6 +104,9 @@ export function apply(ctx: Context): void {
         }
       },
     })
-    return () => { disposeRoute() }
+    return () => {
+      disposed = true
+      disposeRoute()
+    }
   }, 'mascot-lines: route')
 }

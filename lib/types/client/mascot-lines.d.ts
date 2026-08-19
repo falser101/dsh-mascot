@@ -54,6 +54,7 @@ export declare class MascotLineSource implements ObservableSnapshot<string> {
     private builtinIndex;
     private ticksSinceAi;
     private fetchInFlight;
+    private disposed;
     private timer;
     /**
      * @param options - rotation dependencies.
@@ -65,7 +66,7 @@ export declare class MascotLineSource implements ObservableSnapshot<string> {
     subscribe(listener: () => void): () => void;
     /** Apply the user's AI-lines preference to the rotator. */
     setAiEnabled(enabled: boolean): void;
-    /** Stop the rotation timer and any in-flight refill. */
+    /** Stop the rotation timer and ignore any in-flight refill. */
     dispose(): void;
     private advance;
     private refillIfNeeded;

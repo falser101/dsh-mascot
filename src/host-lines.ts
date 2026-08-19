@@ -4,8 +4,21 @@
  * Pure logic — the route handler and the LLM stream wiring live in
  * `src/index.ts`; tests exercise this module with a stubbed generator.
  */
-import { createUserMessage } from '@deepseek-ai/dsh-llm'
-import type { GenerateOptions } from '@deepseek-ai/dsh-llm'
+/** Structural stream request — kept local so a linked checkout does not
+ *  have to resolve `@deepseek-ai/dsh-llm` from the plugin directory. */
+export interface MascotGenerateRequest {
+  readonly provider: string
+  readonly model: string
+  readonly system: string
+  readonly messages: readonly [{
+    readonly id: string
+    readonly role: 'user'
+    readonly content: readonly [{ readonly type: 'text'; readonly text: string }]
+    readonly source: { readonly kind: 'plugin'; readonly plugin: string }
+  }]
+  readonly temperature: number
+  readonly maxTokens: number
+}
 
 /** One batch of AI-generated lines is cached this long before regenerating. */
 export const MASCOT_LINES_TTL_MS = 10 * 60_000
@@ -57,17 +70,17 @@ export function mascotLinesPrompt(locale: MascotLineLocale): string {
 export function buildMascotLinesOptions(
   selection: MascotModelSelection,
   locale: MascotLineLocale,
-): GenerateOptions {
+): MascotGenerateRequest {
   return {
     provider: selection.provider,
     model: selection.model,
     system: mascotLinesPrompt(locale),
-    messages: [
-      createUserMessage({
-        content: [{ type: 'text', text: locale === 'zh' ? '生成 6 条。' : 'Generate 6 lines.' }],
-        source: { kind: 'plugin', plugin: '@falser101/mascot' },
-      }),
-    ],
+    messages: [{
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: [{ type: 'text', text: locale === 'zh' ? '生成 6 条。' : 'Generate 6 lines.' }],
+      source: { kind: 'plugin', plugin: '@falser101/mascot' },
+    }],
     temperature: 1.2,
     maxTokens: MASCOT_LINES_MAX_TOKENS,
   }

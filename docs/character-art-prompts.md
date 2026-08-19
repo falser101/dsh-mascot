@@ -98,6 +98,14 @@ same full-body framing as the main sprite, same pose, same scale, same centered 
 - 中文表情词：`眼睛轻轻闭合，睫毛清晰，安静平和的微笑`
 - 英文表情词：`eyes closed peacefully, clear eyelashes, calm gentle smile`
 
+### 6. 干活脸（调用工具 / working，必须和正常脸区分开）
+- 中文表情词：`认真干活的表情，眉头微皱，眼睛眯成专注的细缝，嘴角抿紧，舌尖微微伸出`
+- 英文表情词：`determined working expression, knitted brows, eyes narrowed in a focused squint, tiny tongue tip sticking out of a small concentrated mouth`
+
+### 7. 写答案脸（流式输出 / streaming，必须和干活脸、思考脸都不同）
+- 中文表情词：`正在写答案的表情，眼睛微微向下看像在看稿，嘴巴张开一个小小的说话口型，认真又有一点期待`
+- 英文表情词：`writing-the-answer expression, eyes looking slightly down as if reading, mouth open in a small speaking oval, attentive and a little eager`
+
 ---
 
 ## 四、参数建议（各工具通用）
@@ -119,12 +127,40 @@ docs/<character>/          ← cat 或 dog，一种形象一个文件夹
   难过脸.jpg
   思考脸.jpg
   闭眼帧.jpg
+  干活脸.jpg
+  写答案脸.jpg
 ```
 
 - PNG 格式，512×512 以上
 - 透明背景最佳；白底也可以（告诉我，我抠图）
 - 表情帧必须是**同一构图的全身**（不是头的特写）。主体在画幅里的位置、大小要和主形象图对得上，否则叠图会错位或出现两个头
 - 接入后自动有：眨眼、表情切换、整体弹跳/晃动/呼吸
+
+## 七、闲置动作帧（伸懒腰 / 捂嘴打哈欠）
+
+坐姿 chibi，不要趴下前伸。每种动作一组关键姿势，构图仍与主形象图同一只、同一比例、白底。
+
+```
+docs/<character>/actions/stretch/01.jpg … 04.jpg
+docs/<character>/actions/yawn/01.jpg … 05.jpg
+```
+
+### 伸懒腰（4 帧，坐着举爪）
+
+1. 预备：仍坐着，肩微沉，眼半闭，两前爪着地
+2. 起势：两前爪抬到胸前，身体略后仰
+3. 顶点：两爪举过头顶，胸腹略拉长，眼弯
+4. 回落：爪回到胸前，身体回坐
+
+### 捂嘴打哈欠（5 帧，单爪）
+
+1. 预备：眼开始眯，嘴微张，两爪着地
+2. 张嘴：嘴张开，一只前爪刚离地
+3. 顶点：爪垫挡住张开的嘴，眼几乎闭上，另一爪着地
+4. 余韵：爪往下放，嘴合上一半
+5. 坐回：爪落地，嘴几乎合上
+
+缺帧的品种闲置只呼吸，不会报错。生成后跑 `node scripts/build-art-assets.mjs`。
 
 ## 六、我做好的部分（等你素材回来直接拼）
 

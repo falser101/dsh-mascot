@@ -3,9 +3,11 @@ import type { SkinId, SkinProps } from './skins.ts';
 export interface ImageSkinProps extends SkinProps {
     /** Which docs/<character>/ sprite set to show. */
     character: SkinId;
+    /** Long wait: calm the looping hop / sway so the pose clip can read. */
+    waitLong?: boolean;
 }
 /**
  * The AI-generated character skin.
  * @param props - skin props from the widget plus the character folder id.
  */
-export declare function ImageSkin({ mood, dragging, character }: ImageSkinProps): import("react").JSX.Element;
+export declare function ImageSkin({ mood, dragging, character, actionHref, waitLong }: ImageSkinProps): import("react").JSX.Element;

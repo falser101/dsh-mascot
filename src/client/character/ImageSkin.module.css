@@ -15,6 +15,23 @@
   animation: mascot-face-pop 0.22s ease-out;
 }
 
+.still {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.fadeOut {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mascot-pose-fade 0.32s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes mascot-pose-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 @keyframes mascot-face-pop {
   0% { opacity: 0.4; transform: scale(0.96); }
   100% { opacity: 1; transform: scale(1); }
@@ -53,6 +70,10 @@
 
 .root[data-mood='working'] .body { animation: mascot-busy 0.5s ease-in-out infinite; }
 
+.root[data-wait='long'][data-mood='working'] .body { animation: mascot-busy 1.6s ease-in-out infinite; }
+
+.root[data-wait='long'][data-mood='queued'] { animation: none; }
+
 @keyframes mascot-busy {
   0%, 100% { transform: rotate(0deg); }
   25% { transform: rotate(2deg); }
@@ -88,6 +109,11 @@
   from { transform: rotate(-4deg); }
   to { transform: rotate(4deg); }
 }
+
+.root[data-action='true'] .body,
+.root[data-action='true'] { animation: none !important; }
+
+.root[data-action='true'] .face { animation: none !important; }
 
 .root[data-dragging='true'] *,
 .root[data-dragging='true'] { animation: none !important; }

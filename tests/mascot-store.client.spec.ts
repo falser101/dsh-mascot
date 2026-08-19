@@ -17,10 +17,13 @@ describe('createMascotStore', () => {
       x: window.innerWidth - MASCOT_SIZE - 24,
       y: window.innerHeight - MASCOT_SIZE - 24,
       collapsed: false,
+      hidden: false,
       skin: 'cat',
       bubbleAlways: true,
-      aiLines: true,
+      showToolName: false,
+      aiLines: false,
       popCadence: 'standard',
+      introSeen: false,
     })
   })
 
@@ -55,7 +58,19 @@ describe('createMascotStore', () => {
     expect(second.getSnapshot()).toMatchObject({
       x: 111, y: 222, collapsed: true, skin: 'dog', bubbleAlways: false,
     })
-    expect(localStorage.getItem('dsh-client-ui-mascot-v2')).not.toBeNull()
+    expect(localStorage.getItem('dsh-client-ui-mascot-v3')).not.toBeNull()
+  })
+
+  it('carries placement from v2 persist but turns AI lines off', () => {
+    localStorage.setItem('dsh-client-ui-mascot-v2', JSON.stringify({
+      x: 40, y: 50, collapsed: false, hidden: false, skin: 'dog-shiba',
+      bubbleAlways: true, showToolName: true, aiLines: true, popCadence: 'quiet',
+    }))
+    const store = createMascotStore().create()
+    expect(store.getSnapshot()).toMatchObject({
+      x: 40, y: 50, skin: 'dog-shiba', showToolName: true, popCadence: 'quiet',
+      aiLines: false, introSeen: false,
+    })
   })
 
   it('leaves the persisted value alone when storage is unavailable', () => {

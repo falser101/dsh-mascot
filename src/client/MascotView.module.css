@@ -11,20 +11,25 @@
   transition: transform 0.18s ease;
 }
 
-.root:hover,
-.root:focus-visible {
-  transform: scale(1.08);
-}
-
 .root.dragging {
   cursor: grabbing;
-  transform: scale(1.04);
   transition: none;
 }
 
 .character {
   width: 100%;
   height: 100%;
+  transform-origin: center bottom;
+  transition: transform 0.18s ease;
+}
+
+.root:hover .character,
+.root:focus-visible .character {
+  transform: scale(1.05);
+}
+
+.root.dragging .character {
+  transform: scale(1.03);
 }
 
 /* ---- speech bubble: visibility rides the component state (busy mood,
@@ -38,8 +43,8 @@
   transform-origin: bottom center;
   opacity: 0;
   pointer-events: none;
-  background: #ffffff;
-  color: #3b2f2a;
+  background: var(--dsw-alias-bg-elevated, #ffffff);
+  color: var(--dsw-alias-label-primary, #3b2f2a);
   border-radius: 14px;
   padding: 8px 12px;
   font-size: 13px;
@@ -60,7 +65,17 @@
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: #ffffff;
+  border-top-color: var(--dsw-alias-bg-elevated, #ffffff);
+}
+
+:global(body[data-ds-dark-theme]) .bubble {
+  background: var(--dsw-alias-bg-elevated, #2c2c31);
+  color: var(--dsw-alias-label-primary, #f3eee7);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 0.45);
+}
+
+:global(body[data-ds-dark-theme]) .bubble::after {
+  border-top-color: var(--dsw-alias-bg-elevated, #2c2c31);
 }
 
 .bubbleVisible {
@@ -159,6 +174,10 @@
   background: rgb(0 0 0 / 0.06);
 }
 
+:global(body[data-ds-dark-theme]) .peerRowJump:hover {
+  background: rgb(255 255 255 / 0.08);
+}
+
 .peerIcon {
   flex: none;
   font-size: 14px;
@@ -178,29 +197,223 @@
   opacity: 0.65;
 }
 
-/* ---- collapsed dot ---- */
-.root.collapsed {
+/* ---- collapsed mini face (double-click) and composer-focus mini ---- */
+.root.collapsed,
+.root.mini {
   width: 44px;
   height: 44px;
 }
 
-.root.collapsed:hover {
+.root.collapsed:hover,
+.root.mini:hover {
   transform: scale(1.12);
 }
 
-.dot {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f9c784, #e89a5b);
-  box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+.tray {
+  --tray-x: -50%;
+  --tray-y: 4px;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translate(var(--tray-x), var(--tray-y));
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 3px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: rgb(255 255 255 / 0.88);
+  border: 1px solid rgb(0 0 0 / 0.06);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 10px 28px rgb(0 0 0 / 0.14);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.tray::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  right: -28px;
+  top: -24px;
+  height: 28px;
+  width: auto;
+}
+
+.tray[data-side='top'] {
+  top: auto;
+  bottom: calc(100% + 6px);
+  --tray-y: -4px;
+}
+
+.tray[data-side='top']::before {
+  top: auto;
+  bottom: -24px;
+}
+
+.tray[data-side='right'] {
+  left: calc(100% + 6px);
+  top: 50%;
+  flex-direction: column;
+  --tray-x: 4px;
+  --tray-y: -50%;
+}
+
+.tray[data-side='right']::before {
+  left: -24px;
+  right: auto;
+  top: -28px;
+  bottom: -28px;
+  width: 28px;
+  height: auto;
+}
+
+.tray[data-side='left'] {
+  left: auto;
+  right: calc(100% + 6px);
+  top: 50%;
+  flex-direction: column;
+  --tray-x: -4px;
+  --tray-y: -50%;
+}
+
+.tray[data-side='left']::before {
+  left: auto;
+  right: -24px;
+  top: -28px;
+  bottom: -28px;
+  width: 28px;
+  height: auto;
+}
+
+.tray[data-side='bottom'][data-align='start'],
+.tray[data-side='top'][data-align='start'] {
+  left: 0;
+  --tray-x: 0;
+}
+
+.tray[data-side='bottom'][data-align='end'],
+.tray[data-side='top'][data-align='end'] {
+  left: auto;
+  right: 0;
+  --tray-x: 0;
+}
+
+.trayOpen {
+  opacity: 1;
+  pointer-events: auto;
+  --tray-y: 0;
+}
+
+.tray[data-side='right'].trayOpen,
+.tray[data-side='left'].trayOpen {
+  --tray-x: 0;
+  --tray-y: -50%;
+}
+
+.root[data-tray-side='top']:has(.trayOpen) .bubble {
+  bottom: calc(100% + 48px);
+}
+
+.trayBtn {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: rgb(52 48 45 / 0.72);
+  background: transparent;
+}
+
+.trayBtn::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: rgb(24 22 20);
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 4;
+}
+
+.trayBtn:hover::after,
+.trayBtn:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.22s;
+}
+
+.trayBtn:hover,
+.trayBtn:focus-visible {
+  color: rgb(24 22 20);
+  background: rgb(0 0 0 / 0.07);
+}
+
+.trayBtn:active {
+  transform: scale(0.96);
+}
+
+:global(body[data-ds-dark-theme]) .tray {
+  background: rgb(26 26 30 / 0.78);
+  border-color: rgb(255 255 255 / 0.1);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    0 12px 32px rgb(0 0 0 / 0.42);
+}
+
+:global(body[data-ds-dark-theme]) .trayBtn {
+  color: rgb(236 231 224 / 0.78);
+}
+
+:global(body[data-ds-dark-theme]) .trayBtn:hover,
+:global(body[data-ds-dark-theme]) .trayBtn:focus-visible {
+  color: rgb(255 255 255);
+  background: rgb(255 255 255 / 0.1);
+}
+
+:global(body[data-ds-dark-theme]) .trayBtn::after {
+  color: rgb(244 240 234);
+  background: rgb(40 40 45 / 0.96);
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.4);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .tray {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #ffffff;
+  }
+
+  :global(body[data-ds-dark-theme]) .tray {
+    background: #2c2c31;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .root,
+  .character,
   .bubble,
   .bubbleText,
-  .busy i {
+  .busy i,
+  .tray {
     transition: none;
     animation: none;
   }

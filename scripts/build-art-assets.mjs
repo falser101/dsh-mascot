@@ -20,11 +20,15 @@ const SOURCES = {
   'face-sad': '难过脸.jpg',
   'face-thinking': '思考脸.jpg',
   'face-closed': '闭眼帧.jpg',
+  'face-working': '干活脸.jpg',
+  'face-streaming': '写答案脸.jpg',
 }
 
-const SIZE = 512
+const ACTIONS = ['stretch', 'yawn']
+const FACE_SIZE = 512
+const ACTION_SIZE = 384
 
-function toWebpBase64(file) {
+function toWebpBase64(file, size, quality) {
   const [width, height] = execSync(`identify -format '%w %h' '${file}'`, { encoding: 'utf8' })
     .trim()
     .split(' ')
@@ -35,7 +39,7 @@ function toWebpBase64(file) {
     `-floodfill +${width - 1}+0 white ` +
     `-floodfill +0+${height - 1} white ` +
     `-floodfill +${width - 1}+${height - 1} white ` +
-    `-resize ${SIZE}x${SIZE} -quality 80 webp:-`,
+    `-resize ${size}x${size} -quality ${quality} webp:-`,
     { encoding: null, maxBuffer: 64 * 1024 * 1024 },
   )
   return webp.toString('base64')
@@ -43,14 +47,23 @@ function toWebpBase64(file) {
 
 const characters = {}
 for (const character of CHARACTERS) {
-  const faces = {}
+  const pack = {}
   for (const [name, file] of Object.entries(SOURCES)) {
     const path = `docs/${character}/${file}`
-    const base64 = toWebpBase64(path)
-    faces[name] = base64
-    console.log(`${character}/${name}: ${(base64.length / 1024).toFixed(0)} KiB base64`)
+    pack[name] = toWebpBase64(path, FACE_SIZE, 80)
+    console.log(`${character}/${name}: ${(pack[name].length / 1024).toFixed(0)} KiB base64`)
   }
-  characters[character] = faces
+  for (const action of ACTIONS) {
+    for (let index = 1; index <= 8; index += 1) {
+      const padded = String(index).padStart(2, '0')
+      const path = `docs/${character}/actions/${action}/${padded}.jpg`
+      if (!existsSync(path)) break
+      const key = `action-${action}-${index}`
+      pack[key] = toWebpBase64(path, ACTION_SIZE, 75)
+      console.log(`${character}/${key}: ${(pack[key].length / 1024).toFixed(0)} KiB base64`)
+    }
+  }
+  characters[character] = pack
 }
 
 const banner = `/**

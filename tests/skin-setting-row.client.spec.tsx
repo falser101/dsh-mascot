@@ -5,6 +5,7 @@
  */
 import { afterEach, describe, expect, it, beforeEach } from 'vitest'
 import { cleanup, fireEvent, render } from '@testing-library/react'
+import { useSyncExternalStore } from 'react'
 import { createMascotStore } from '../src/client/mascot-store'
 import { zh, type MascotKey } from '../src/client/locales'
 import { SkinSettingRow, type SkinSettingRowProps } from '../src/client/SkinSettingRow'
@@ -18,7 +19,10 @@ function translate(key: MascotKey): string {
 function bench() {
   const store = createMascotStore().create()
   const props: SkinSettingRowProps = {
-    useStore: (selector) => selector(store.getSnapshot()),
+    useStore: (selector) => useSyncExternalStore(
+      store.subscribe,
+      () => selector(store.getSnapshot()),
+    ),
     actions: store.actions,
     t: translate,
     useSessions: (() => undefined) as never,

@@ -1,6 +1,6 @@
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots';
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-runtime/client';
-import type { MascotState } from './mascot-source';
+import type { BusyPeer, MascotState } from './mascot-source';
 import { createMascotStore } from './mascot-store';
 import type { NS } from './locales';
 /** Injectable face: the mood source and the idle line bound as hooks. */
@@ -13,11 +13,16 @@ export interface MascotViewInjected {
     };
     /** Jump to the session owning the given peer id (no-op for job peers). */
     openPeer: (sessionId: string) => void;
+    /** Open the host settings panel on the companion page (best-effort). */
+    openSettings: () => void;
     /** Apply the AI-lines settings toggle to the rotator. */
     setAiLines: (enabled: boolean) => void;
 }
 /** Full overlay-entry props: runtime kit + locale seat + store + inject face. */
 export type MascotViewProps = PropsRuntime<'shell.overlay'> & PropsLocale<typeof NS> & PropsStore<ReturnType<typeof createMascotStore>> & InjectFace<MascotViewInjected>;
+/** Small icon for one peer kind. */
+/** Session id to jump to from the pet menu (jobs cannot be opened). */
+export declare function jumpPeerId(peers: readonly BusyPeer[]): string | undefined;
 /**
  * Render the draggable companion with its speech bubble. The bubble is
  * always visible while the agent is busy (unless the settings toggle turns

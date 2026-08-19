@@ -34,6 +34,7 @@ async function bench() {
     children: {
       'shell.overlay': { kind: 'list', scope: 'root' },
       'settings.section': { kind: 'list', scope: 'root' },
+      'settings.general.item': { kind: 'list', scope: 'root' },
     },
   } as never, (() => null) as never)
   const fiber = ctx.plugin({ inject: [...inject], apply })
@@ -66,6 +67,7 @@ describe('mascot browser plugin', () => {
     const face = overlay.inject!() as MascotViewInjected
     expect(face.hooks.lines.getSnapshot()).toBeTypeOf('string')
     expect(face.setAiLines).toBeTypeOf('function')
+    expect(face.openSettings).toBeTypeOf('function')
     await b.fiber.dispose()
   })
 
@@ -80,7 +82,9 @@ describe('mascot browser plugin', () => {
       store: overlay.store,
     })
     expect(typeof section?.label).toBe('function')
-    expect((section?.label as () => string)()).toBe('悬浮伙伴')
+    expect(['悬浮伙伴', 'Companion']).toContain((section?.label as () => string)())
+    const general = b.ctx.slots.entries('settings.general.item')
+    expect(general.some(entry => entry.options.id === 'ui-mascot-visible')).toBe(true)
     await b.fiber.dispose()
   })
 
@@ -107,6 +111,7 @@ describe('mascot browser plugin', () => {
 
     expect(b.ctx.slots.entries('shell.overlay')).toHaveLength(0)
     expect(b.ctx.slots.entries('settings.section')).toHaveLength(0)
+    expect(b.ctx.slots.entries('settings.general.item')).toHaveLength(0)
 
     await b.sessions.updateSnapshot(SESSION_ID, (draft) => {
       draft.running = true

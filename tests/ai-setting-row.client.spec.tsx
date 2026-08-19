@@ -36,11 +36,12 @@ describe('AISettingRow', () => {
     localStorage.clear()
   })
 
-  it('renders the preference row with the switch on by default', () => {
+  it('renders the preference row with the switch off by default', () => {
     const { props } = bench()
     const view = render(<AISettingRow {...props} />)
     expect(view.getByText('AI 小剧场')).not.toBeNull()
-    expect(view.getByRole('switch').getAttribute('aria-checked')).toBe('true')
+    expect(view.getByRole('switch').getAttribute('aria-checked')).toBe('false')
+    expect(view.getByText(/当前默认模型/)).not.toBeNull()
   })
 
   it('toggles the shared store and the switch state', () => {
@@ -49,11 +50,11 @@ describe('AISettingRow', () => {
     const toggle = view.getByRole('switch')
 
     fireEvent.click(toggle)
-    expect(store.getSnapshot().aiLines).toBe(false)
-    expect(toggle.getAttribute('aria-checked')).toBe('false')
-
-    fireEvent.click(toggle)
     expect(store.getSnapshot().aiLines).toBe(true)
     expect(toggle.getAttribute('aria-checked')).toBe('true')
+
+    fireEvent.click(toggle)
+    expect(store.getSnapshot().aiLines).toBe(false)
+    expect(toggle.getAttribute('aria-checked')).toBe('false')
   })
 })

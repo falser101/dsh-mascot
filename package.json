@@ -17,6 +17,9 @@
     "mascot"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -75,8 +78,14 @@
     "lightningcss": "^1.29.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "rolldown": "1.0.0-beta.32",
     "tsdown": "^0.7.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "rolldown": "1.0.0-beta.32"
+    }
   }
 }

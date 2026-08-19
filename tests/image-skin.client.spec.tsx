@@ -24,8 +24,10 @@ function renderMood(mood: MascotMood) {
 
 function faceOf(view: ReturnType<typeof render>) {
   const images = view.container.querySelectorAll('image')
-  const face = images[images.length - 1]
-  return face?.getAttribute('href') ?? ''
+  // Hidden preload images sit first; the current pose is the first full-size
+  // frame (a fading previous pose, if any, is painted on top after it).
+  const visible = [...images].find(node => node.getAttribute('width') !== '0')
+  return visible?.getAttribute('href') ?? ''
 }
 
 describe('ImageSkin', () => {
@@ -48,6 +50,16 @@ describe('ImageSkin', () => {
 
     const thinking = renderMood('thinking')
     expect(faceOf(thinking)).toBe(faceUri('thinking'))
+    thinking.unmount()
+
+    const working = renderMood('working')
+    expect(faceOf(working)).toBe(faceUri('working'))
+    working.unmount()
+
+    const streaming = renderMood('streaming')
+    expect(faceOf(streaming)).toBe(faceUri('streaming'))
+    expect(CHARACTER_ASSETS.cat['face-working']).not.toBe(CHARACTER_ASSETS.cat['face-neutral'])
+    expect(CHARACTER_ASSETS.cat['face-streaming']).not.toBe(CHARACTER_ASSETS.cat['face-working'])
   })
 
   it('blinks on a timer while the face is neutral', () => {
@@ -67,5 +79,28 @@ describe('ImageSkin', () => {
     const view = renderMood('done')
     act(() => { vi.advanceTimersByTime(4000) })
     expect(faceOf(view)).toBe(faceUri('happy'))
+  })
+
+  it('marks a long wait on the svg', () => {
+    const view = render(<ImageSkin character="cat" mood="working" dragging={false} waitLong />)
+    expect(view.container.querySelector('svg')?.getAttribute('data-wait')).toBe('long')
+  })
+
+  it('replaces the expression with a playing action frame', () => {
+    const view = render(
+      <ImageSkin character="cat" mood="idle" dragging={false} actionHref="data:action" />,
+    )
+    const svg = view.container.querySelector('svg')
+    expect(svg?.getAttribute('data-action')).toBe('true')
+    expect(faceOf(view)).toBe('data:action')
+  })
+
+  it('does not blink while an action clip is playing', () => {
+    vi.useFakeTimers()
+    const view = render(
+      <ImageSkin character="cat" mood="idle" dragging={false} actionHref="data:action" />,
+    )
+    act(() => { vi.advanceTimersByTime(4000) })
+    expect(faceOf(view)).toBe('data:action')
   })
 })

@@ -1,4 +1,32 @@
-import type { GenerateOptions } from '@deepseek-ai/dsh-llm';
+/**
+ * Host-side mascot-line generation: the prompt template, request assembly,
+ * response parsing, and the TTL-cached service behind `GET /mascot/lines`.
+ * Pure logic — the route handler and the LLM stream wiring live in
+ * `src/index.ts`; tests exercise this module with a stubbed generator.
+ */
+/** Structural stream request — kept local so a linked checkout does not
+ *  have to resolve `@deepseek-ai/dsh-llm` from the plugin directory. */
+export interface MascotGenerateRequest {
+    readonly provider: string;
+    readonly model: string;
+    readonly system: string;
+    readonly messages: readonly [
+        {
+            readonly id: string;
+            readonly role: 'user';
+            readonly content: readonly [{
+                readonly type: 'text';
+                readonly text: string;
+            }];
+            readonly source: {
+                readonly kind: 'plugin';
+                readonly plugin: string;
+            };
+        }
+    ];
+    readonly temperature: number;
+    readonly maxTokens: number;
+}
 /** One batch of AI-generated lines is cached this long before regenerating. */
 export declare const MASCOT_LINES_TTL_MS: number;
 /** Lines generated per batch (the client rotates them at ~1/5 of its cadence). */
@@ -33,7 +61,7 @@ export declare function mascotLinesPrompt(locale: MascotLineLocale): string;
  * @param locale - the line locale.
  * @returns the streamable request.
  */
-export declare function buildMascotLinesOptions(selection: MascotModelSelection, locale: MascotLineLocale): GenerateOptions;
+export declare function buildMascotLinesOptions(selection: MascotModelSelection, locale: MascotLineLocale): MascotGenerateRequest;
 /**
  * Parse and validate the model's raw output into a line batch. Accepts a
  * fenced JSON block; drops non-string, blank, and overlong entries and

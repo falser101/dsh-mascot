@@ -136,6 +136,34 @@ describe('MascotSource over TestSessions', () => {
       draft.runningCalls = [{ name: 'grep' } as never]
     })
     expect(source.getSnapshot()).toMatchObject({ mood: 'working', params: { tool: 'grep' } })
+    const started = source.getSnapshot().waitStartedAt
+    expect(started).toEqual(expect.any(Number))
+
+    source.dispose()
+  })
+
+  it('keeps one wait clock across thinking into working, then clears it on idle', async () => {
+    const { sessions, source } = await bench()
+    await sessions.add({ id: SESSION_ID })
+    await sessions.updateSnapshot(SESSION_ID, (draft) => {
+      draft.running = true
+    })
+    const started = source.getSnapshot().waitStartedAt
+    expect(source.getSnapshot().mood).toBe('thinking')
+    expect(started).toEqual(expect.any(Number))
+
+    await sessions.updateSnapshot(SESSION_ID, (draft) => {
+      draft.runningCalls = [{ name: 'bash' } as never]
+    })
+    expect(source.getSnapshot().mood).toBe('working')
+    expect(source.getSnapshot().waitStartedAt).toBe(started)
+
+    await sessions.updateSnapshot(SESSION_ID, (draft) => {
+      draft.running = false
+      draft.runningCalls = []
+    })
+    expect(source.getSnapshot().mood).toBe('idle')
+    expect(source.getSnapshot().waitStartedAt).toBeUndefined()
 
     source.dispose()
   })

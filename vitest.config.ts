@@ -26,6 +26,7 @@ function harnessAliases(): Array<{ find: string; replacement: string }> {
 export default defineConfig({
   resolve: {
     alias: harnessAliases(),
+    dedupe: ['react', 'react-dom'],
   },
   test: {
     include: ['tests/**/*.spec.ts?(x)'],

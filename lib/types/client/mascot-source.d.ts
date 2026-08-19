@@ -29,8 +29,10 @@ export interface BusyPeer {
     /** True for the currently selected session (jump target affordance). */
     readonly current?: boolean;
 }
+/** Moods that count as waiting on the model (or on other running work). */
+export declare const WAIT_MOODS: ReadonlySet<MascotMood>;
 /** The mood half of a published frame (busy context is composed in by the fold). */
-export type MascotMoodFrame = Omit<MascotState, 'busyCount' | 'peers'>;
+export type MascotMoodFrame = Omit<MascotState, 'busyCount' | 'peers' | 'waitStartedAt'>;
 /** One published companion frame: mood, bubble line, and busy context. */
 export interface MascotState {
     readonly mood: MascotMood;
@@ -44,6 +46,8 @@ export interface MascotState {
     readonly busyCount: number;
     /** Ordered peer list for the hover detail (current session first). */
     readonly peers: readonly BusyPeer[];
+    /** Epoch ms when the current wait began; omitted when not waiting. */
+    readonly waitStartedAt?: number;
 }
 /** How long a transient mood (greeting/done) stays before folding back. */
 export declare const MASCOT_TRANSIENT_MS = 4000;
@@ -87,6 +91,7 @@ export declare class MascotSource implements ObservableSnapshot<MascotState> {
     private lastSnapshot;
     private lastSeenSessionId;
     private lastTurnEnds;
+    private waitStartedAt;
     /**
      * @param sessions - the client sessions service (list + bindings).
      */

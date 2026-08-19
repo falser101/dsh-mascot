@@ -49,6 +49,7 @@ describe('MascotLineSource', () => {
   it('mixes in one AI line every fifth tick and consumes the pool', async () => {
     vi.useFakeTimers()
     const { source } = bench(async () => ['ai-1', 'ai-2'])
+    source.setAiEnabled(true)
     source.start()
     await vi.advanceTimersByTimeAsync(0) // flush the refill promise, no tick
 
@@ -89,7 +90,6 @@ describe('MascotLineSource', () => {
   it('does not fetch or consume AI lines when the toggle is off', async () => {
     vi.useFakeTimers()
     const { source, calls } = bench(async () => ['ai-1'])
-    source.setAiEnabled(false)
     source.start()
     await vi.advanceTimersByTimeAsync(MASCOT_LINE_INTERVAL_MS * 6)
     expect(calls).toHaveLength(0)
@@ -100,6 +100,7 @@ describe('MascotLineSource', () => {
   it('persists fetched batches and restores them across instances', async () => {
     vi.useFakeTimers()
     const { source } = bench(async () => ['persisted-1'])
+    source.setAiEnabled(true)
     source.start()
     await vi.advanceTimersByTimeAsync(MASCOT_LINE_INTERVAL_MS)
     expect(localStorage.getItem(MASCOT_LINES_STORAGE_KEY)).toContain('persisted-1')
@@ -112,6 +113,7 @@ describe('MascotLineSource', () => {
         return raw === null ? undefined : JSON.parse(raw) as { lines: string[]; refreshedAt: number }
       },
     })
+    restored.setAiEnabled(true)
     restored.start()
     // Four built-in ticks, then the restored AI line on the fifth.
     await vi.advanceTimersByTimeAsync(MASCOT_LINE_INTERVAL_MS * 4)
@@ -125,6 +127,7 @@ describe('MascotLineSource', () => {
   it('refills only when the AI queue empties, not while it still holds lines', async () => {
     vi.useFakeTimers()
     const { source, calls } = bench(async () => ['one', 'two'])
+    source.setAiEnabled(true)
     source.start()
     await vi.advanceTimersByTimeAsync(0)
     expect(calls).toHaveLength(1)
@@ -144,6 +147,18 @@ describe('MascotLineSource', () => {
     source.dispose()
     vi.advanceTimersByTime(MASCOT_LINE_INTERVAL_MS * 3)
     expect(source.getSnapshot()).toBe('idle.line.0')
+  })
+
+  it('does not enqueue a refill that settles after dispose', async () => {
+    let resolveFetch: (lines: readonly string[]) => void = () => {}
+    const { source } = bench(() => new Promise(resolve => { resolveFetch = resolve }))
+    source.setAiEnabled(true)
+    source.start()
+    source.dispose()
+    resolveFetch(['late'])
+    await Promise.resolve()
+    expect(source.getSnapshot()).toBe('idle.line.0')
+    expect(localStorage.getItem(MASCOT_LINES_STORAGE_KEY)).toBeNull()
   })
 
   it('exposes the built-in pool size matching the AI cadence', () => {

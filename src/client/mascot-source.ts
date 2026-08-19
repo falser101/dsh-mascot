@@ -44,8 +44,13 @@ export interface BusyPeer {
   readonly current?: boolean
 }
 
+/** Moods that count as waiting on the model (or on other running work). */
+export const WAIT_MOODS: ReadonlySet<MascotMood> = new Set([
+  'queued', 'thinking', 'working', 'streaming', 'elsewhere',
+])
+
 /** The mood half of a published frame (busy context is composed in by the fold). */
-export type MascotMoodFrame = Omit<MascotState, 'busyCount' | 'peers'>
+export type MascotMoodFrame = Omit<MascotState, 'busyCount' | 'peers' | 'waitStartedAt'>
 
 /** One published companion frame: mood, bubble line, and busy context. */
 export interface MascotState {
@@ -60,6 +65,8 @@ export interface MascotState {
   readonly busyCount: number
   /** Ordered peer list for the hover detail (current session first). */
   readonly peers: readonly BusyPeer[]
+  /** Epoch ms when the current wait began; omitted when not waiting. */
+  readonly waitStartedAt?: number
 }
 
 /** How long a transient mood (greeting/done) stays before folding back. */
@@ -213,6 +220,7 @@ function sameFrame(a: MascotState, b: MascotState): boolean {
   if (a.mood !== b.mood || a.textKey !== b.textKey) return false
   if (a.params?.tool !== b.params?.tool || a.params?.count !== b.params?.count) return false
   if (a.busyCount !== b.busyCount) return false
+  if (a.waitStartedAt !== b.waitStartedAt) return false
   if (a.peers.length !== b.peers.length) return false
   return a.peers.every((peer, index) => {
     const other = b.peers[index]
@@ -244,6 +252,7 @@ export class MascotSource implements ObservableSnapshot<MascotState> {
   private lastSnapshot: ConversationSnapshot | undefined
   private lastSeenSessionId: SessionId | undefined
   private lastTurnEnds: ReadonlyMap<number, number> = EMPTY_TURN_ENDS
+  private waitStartedAt: number | undefined
 
   /**
    * @param sessions - the client sessions service (list + bindings).
@@ -292,6 +301,7 @@ export class MascotSource implements ObservableSnapshot<MascotState> {
     this.lastSeenSessionId = undefined
     this.lastTurnEnds = EMPTY_TURN_ENDS
     if (current === undefined) {
+      this.waitStartedAt = undefined
       this.emit({ ...steady('idle', 'mood.idle'), busyCount: 0, peers: [] })
       return
     }
@@ -312,7 +322,16 @@ export class MascotSource implements ObservableSnapshot<MascotState> {
     if (next.mood === 'idle' && busy.busyCount > 0) {
       next = steady('elsewhere', 'mood.elsewhere', { count: busy.busyCount })
     }
-    this.emit({ ...next, ...busy })
+    if (WAIT_MOODS.has(next.mood)) {
+      this.waitStartedAt ??= Date.now()
+    } else {
+      this.waitStartedAt = undefined
+    }
+    this.emit({
+      ...next,
+      ...busy,
+      ...(this.waitStartedAt === undefined ? {} : { waitStartedAt: this.waitStartedAt }),
+    })
   }
 
   private emit(next: MascotState): void {

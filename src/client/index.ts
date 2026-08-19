@@ -19,7 +19,9 @@ import { createMascotStore } from './mascot-store'
 import { MascotSource } from './mascot-source'
 import { MascotLineSource } from './mascot-lines'
 import { MascotView, type MascotViewInjected } from './MascotView'
+import { tryOpenSettingsSection } from './open-settings'
 import { MascotSettingsSection } from './MascotSettingsSection'
+import { VisibleSettingRow } from './VisibleSettingRow'
 
 /** Required services: the sessions list/bindings, the slot registry, and locale registration. */
 export const inject = ['sessions', 'slots', 'locale']
@@ -54,6 +56,7 @@ export function apply(ctx: ClientContext): void {
   lines.start()
   ctx.effect(() => () => lines.dispose(), 'mascot: line rotator')
 
+  const t = ctx.locale.bind(NS)
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',
     id: 'ui-mascot',
@@ -63,11 +66,11 @@ export function apply(ctx: ClientContext): void {
     inject: (): MascotViewInjected => ({
       hooks: { mascot: source, lines },
       openPeer: (sessionId) => { ctx.sessions.open(sessionId as SessionId) },
+      openSettings: () => { tryOpenSettingsSection(t('nav')) },
       setAiLines: (enabled) => { lines.setAiEnabled(enabled) },
     }),
   }, MascotView))
 
-  const t = ctx.locale.bind(NS)
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
     id: 'ui-mascot',
@@ -76,4 +79,14 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     store,
   }, MascotSettingsSection))
+
+  // Master show/hide also lives on General — that is the page people open
+  // for a single switch, next to the old bubble row.
+  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
+    name: 'settings.general.item',
+    id: 'ui-mascot-visible',
+    order: 55,
+    locale: NS,
+    store,
+  }, VisibleSettingRow))
 }

@@ -28,6 +28,10 @@ export interface SkinProps {
   mood: MascotMood
   /** True while the user drags the widget; pauses the character's own motion. */
   dragging: boolean
+  /** Playing idle-clip frame (data URI); when set, replaces the expression. */
+  actionHref?: string | null
+  /** Long wait: calm looping motion. */
+  waitLong?: boolean
 }
 
 /** One switchable character look. */
@@ -65,4 +69,19 @@ export const SKINS: readonly SkinDefinition[] = [
 /** Resolve one skin definition by id (fallback: the first installed skin). */
 export function skinOf(id: SkinId): SkinDefinition {
   return SKINS.find(skin => skin.id === id) ?? SKINS[0]
+}
+
+/** Cycle to the next installed skin (wraps). */
+export function nextSkinId(id: SkinId): SkinId {
+  const index = SKINS.findIndex(skin => skin.id === id)
+  const next = SKINS[(index + 1 + SKINS.length) % SKINS.length]
+  return next?.id ?? SKINS[0].id
+}
+
+const CAT_POKE_KEYS: readonly MascotKey[] = ['poke.cat.0', 'poke.cat.1', 'poke.cat.2', 'poke.cat.3']
+const DOG_POKE_KEYS: readonly MascotKey[] = ['poke.dog.0', 'poke.dog.1', 'poke.dog.2', 'poke.dog.3']
+
+/** Click-line keys for one skin: cats meow, dogs woof. */
+export function pokeKeysOf(id: SkinId): readonly MascotKey[] {
+  return skinOf(id).group === 'dog' ? DOG_POKE_KEYS : CAT_POKE_KEYS
 }

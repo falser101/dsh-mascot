@@ -84,10 +84,11 @@ export class MascotLineSource implements ObservableSnapshot<string> {
   private readonly listeners = new Set<() => void>()
   private readonly intervalMs: number
   private readonly aiQueue: string[]
-  private aiEnabled = true
+  private aiEnabled = false
   private builtinIndex = 0
   private ticksSinceAi = 0
   private fetchInFlight = false
+  private disposed = false
   private timer: ReturnType<typeof setInterval> | undefined
 
   /**
@@ -121,8 +122,9 @@ export class MascotLineSource implements ObservableSnapshot<string> {
     if (enabled) this.refillIfNeeded()
   }
 
-  /** Stop the rotation timer and any in-flight refill. */
+  /** Stop the rotation timer and ignore any in-flight refill. */
   dispose(): void {
+    this.disposed = true
     if (this.timer !== undefined) {
       clearInterval(this.timer)
       this.timer = undefined
@@ -143,11 +145,11 @@ export class MascotLineSource implements ObservableSnapshot<string> {
   }
 
   private refillIfNeeded(): void {
-    if (!this.aiEnabled || this.fetchInFlight) return
+    if (this.disposed || !this.aiEnabled || this.fetchInFlight) return
     this.fetchInFlight = true
     void this.options.fetchLines(this.options.locale()).then(
       (lines) => {
-        if (lines.length === 0) return
+        if (this.disposed || lines.length === 0) return
         const pool: PersistedLines = { lines, refreshedAt: Date.now() }
         this.aiQueue.push(...lines)
         ;(this.options.save ?? savePersisted)(pool)
