@@ -38,12 +38,14 @@ It blinks while idle. Whole-body motion kicks in for thinking, tool calls, strea
 
 - **Session-aware.** Queued, waiting for you, thinking, calling a tool, writing, done, or errored — each has its own face and line. Display-only: it never emits session events.
 - **Draggable.** It stays where you drop it. A resize clamps it back into the viewport.
-- **Status bubble.** Busy lines are companion copy (“Still busy, hang on”). Tool names stay off unless you hover or turn them on in settings. While idle it can pop on a quiet / standard / lively cadence.
+- **Shrinks while you type.** Focus in the composer while it is idle tucks it into a mini face in the same corner; it expands again after you send.
+- **Status bubble.** Busy lines are companion copy (“Still busy, hang on”). Tool names stay off unless you hover or turn them on in settings. While idle it can pop on a quiet / standard / lively cadence. The first appearance says “Drag me — hover for buttons” once.
 - **AI vignettes (off by default).** When on, idle lines may come from the **current default model** (and use that model’s quota). Missing keys or a failed call fall back to the built-in pool.
 - **Hover comfort.** The bubble switches to a softer line, e.g. “Hold on, I am thinking hard.”
 - **Parallel work.** A badge appears when several sessions or sub-agents are running. Hover for the list; click a row to jump there.
 - **Show / hide.** Settings → General, or Settings → Companion, has a “Show floating pet” switch. Off removes it from the UI. Right-click → Hide does the same.
-- **Entries on the pet.** Click for a playful line; double-click collapses to a mini face. Hover shows a small dock under the feet: next look, jump to the current task, hide, open Settings. Right-click pins the dock.
+- **Entries on the pet.** Click for a playful line (cats meow, dogs woof). Double-click collapses to a mini face. Hover shows a small dock: next look, jump to the current task, hide, open Settings. Right-click pins the dock. On the bottom edge the dock opens above the pet; on the left it opens to the right, so it stays on screen.
+- **Working and writing have their own faces.** Tool calls squint; streaming opens a small speaking mouth — not the same neutral face with a CSS wobble.
 - **The longer the wait, the bigger the pose.** A yawn, then a stretch, while the model is working. Ambient clips still play while idle. Cadence follows Quiet / Standard / Lively.
 - Copy follows the UI language (Chinese / English). Motion stops when the system asks for reduced motion.
 
